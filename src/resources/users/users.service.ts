@@ -30,8 +30,8 @@ export class UsersService {
   //   return `This action returns all users`;
   // }
 
-  async findByName(username: string) {
-    return (await this.usersModel.findOne({ username }).exec())?.toObject();
+  async findByEmail(email: string) {
+    return (await this.usersModel.findOne({ email }).exec())?.toObject();
   }
 
   async findById(id: string) {

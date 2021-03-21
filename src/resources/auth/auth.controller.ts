@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpException,
   HttpStatus,
   Post,
@@ -16,16 +17,29 @@ import { Request } from 'express';
 import { RolesMeta } from '../../decorators/roles-meta.decorator';
 import { Roles } from '../../constants/roles.constant';
 import { RolesGuard } from './guards/roles.guard';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private userService: UsersService,
+  ) {}
 
-  // @UseGuards(LocalAuthGuard)
+  @Get('login')
+  @Header('Access-Control-Allow-Origin', '*')
+  testgetLogin() {
+    console.log('test get');
+  }
+
   @Post('login')
+  // @UseGuards(LocalAuthGuard)
+  @Header('Access-Control-Allow-Origin', '*')
   async login(@Body() loginDto: LoginDto) {
-    const { username, password } = loginDto;
-    const user = await this.authService.validateUser(username, password);
+    console.log('loginDto', loginDto);
+
+    const { email, password } = loginDto;
+    const user = await this.authService.validateUser(email, password);
 
     if (!user) {
       throw new HttpException('USER NOT FOUND', HttpStatus.NOT_FOUND);
@@ -34,10 +48,13 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesMeta(Roles.Admin)
   @Get('profile')
-  getProfile(@Req() request: Request) {
-    return request.user;
+  @UseGuards(JwtAuthGuard)
+  // @RolesMeta(Roles.Admin)
+  @Header('Access-Control-Allow-Origin', '*')
+  async getProfile(@Req() request: Request) {
+    const user: any = request.user;
+
+    return this.userService.findByEmail(user?.email);
   }
 }

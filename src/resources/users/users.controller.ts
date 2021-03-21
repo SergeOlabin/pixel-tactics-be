@@ -26,6 +26,7 @@ export class UsersController {
   @Get()
   @Header('Access-Control-Allow-Origin', '*')
   async findAll() {
+    console.log('GET ALL USERS');
     return this.usersService.findAll();
   }
 

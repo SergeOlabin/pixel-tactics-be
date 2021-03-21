@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { CatsModule } from './resources/cats/cats.module';
 import { GameModule } from './resources/game/game.module';
 import { UsersModule } from './resources/users/users.module';
+import { AuthModule } from './resources/auth/auth.module';
 
 // TODO: USE ENV VARS
 const DB_NAME = 'pixel-mongo-db';
@@ -19,6 +20,7 @@ const PASSWORD = 'bB3vKcomXVOtTxxi';
       `mongodb+srv://${USERNAME}:${PASSWORD}@pixel-cluster-0.zvzvy.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`,
     ),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

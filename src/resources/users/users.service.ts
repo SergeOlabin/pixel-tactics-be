@@ -31,7 +31,7 @@ export class UsersService {
   // }
 
   async findByName(username: string) {
-    return (await this.usersModel.findOne({ username }).exec()).toObject();
+    return (await this.usersModel.findOne({ username }).exec())?.toObject();
   }
 
   async findById(id: string) {

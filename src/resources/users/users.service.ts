@@ -7,17 +7,11 @@ import { UserEntity } from './entities/user.entity';
 import { User, UserDocumentType } from './schemas/users.schema';
 
 @Injectable()
-export class UsersService implements OnModuleInit {
-  private users: UserEntity[];
-
+export class UsersService {
   constructor(
     @InjectModel(User.name)
     private readonly usersModel: Model<UserDocumentType>,
   ) {}
-
-  async onModuleInit() {
-    this.users = await this.findAll();
-  }
 
   async create(createCatDto: CreateUserDto): Promise<UserEntity> {
     const createdUser = new this.usersModel(createCatDto);
@@ -25,7 +19,7 @@ export class UsersService implements OnModuleInit {
   }
 
   async findAll(): Promise<UserEntity[]> {
-    return this.usersModel.find().exec();
+    return (await this.usersModel.find().exec()).map((v) => v.toObject());
   }
 
   // create(createUserDto: CreateUserDto) {
@@ -36,12 +30,12 @@ export class UsersService implements OnModuleInit {
   //   return `This action returns all users`;
   // }
 
-  findByName(username: string) {
-    return this.users.find((user) => user.username === username);
+  async findByName(username: string) {
+    return (await this.usersModel.findOne({ username }).exec()).toObject();
   }
 
-  findById(id: string) {
-    this.users.find((user) => user._id === id);
+  async findById(id: string) {
+    return (await this.usersModel.findById(id).exec()).toObject();
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

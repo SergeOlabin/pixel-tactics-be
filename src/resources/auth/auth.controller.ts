@@ -1,25 +1,15 @@
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Request,
-  Body,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt.guard';
 import { LoginDto } from './dto/login.dto';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { LocalAuthGuard } from './guards/local.guard';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get()
-  testGet() {
-    return 'auth GET';
-  }
-
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     const { username, password } = loginDto;
@@ -27,15 +17,27 @@ export class AuthController {
     return this.authService.login(user);
   }
 
+  // @UseGuards(LocalAuthGuard)
+  // @Post('login')
+  // async login(@Request() req) {
+  //   return req.user;
+  // }
+
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@Req() request: Request) {
+    return request.user;
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('test')
   test() {
-    return 'rest';
+    return 'test';
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('test2')
+  test2() {
+    return 'test';
   }
 }

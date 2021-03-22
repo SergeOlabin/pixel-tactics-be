@@ -43,6 +43,16 @@ export class UsersService {
     return await this.usersModel.findById(id).exec();
   }
 
+  async getUserFriendsInfo(userId: string) {
+    const user = await (await this.usersModel.findById(userId))?.toObject();
+
+    if (!user) {
+      return null;
+    }
+
+    return await this.usersModel.find({ _id: { $in: user.friendIds } }).exec();
+  }
+
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }
@@ -76,7 +86,7 @@ export class UsersService {
       currentUser.friendIds.push(targetUserId);
       currentUser.save();
     } else {
-      console.log('!!! VALIDATE ADDING DUPLICATED FRIENDS!!! ');
+      console.warn('!!! VALIDATE ADDING DUPLICATED FRIENDS!!! ');
     }
   }
 }

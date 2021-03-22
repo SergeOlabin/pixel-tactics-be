@@ -8,6 +8,7 @@ import { jwtConstants } from './constants/jwt.constant';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { RolesGuard } from './guards/roles.guard';
+import { ProfileController } from './profile.controller';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { RolesGuard } from './guards/roles.guard';
       signOptions: { expiresIn: '24h' },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, ProfileController],
   providers: [AuthService, JwtStrategy, LocalStrategy, RolesGuard],
 })
 export class AuthModule {}

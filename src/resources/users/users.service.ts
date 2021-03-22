@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -13,8 +18,8 @@ export class UsersService {
     private readonly usersModel: Model<UserDocumentType>,
   ) {}
 
-  async create(createCatDto: CreateUserDto): Promise<UserEntity> {
-    const createdUser = new this.usersModel(createCatDto);
+  async create(createUserDto: CreateUserDto): Promise<UserEntity> {
+    const createdUser = new this.usersModel(createUserDto);
     return createdUser.save();
   }
 
@@ -35,7 +40,7 @@ export class UsersService {
   }
 
   async findById(id: string) {
-    return (await this.usersModel.findById(id).exec()).toObject();
+    return await this.usersModel.findById(id).exec();
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
@@ -44,5 +49,34 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async addFriend(originUserId: string, targetUserId: string) {
+    const currentUser = await this.findById(originUserId);
+    const targetUser = await this.findById(targetUserId);
+
+    if (!currentUser) {
+      throw new HttpException(
+        `User with id ${originUserId} not found`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    if (!targetUser) {
+      throw new HttpException(
+        `User with id ${targetUserId} not found`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    if (!currentUser.friendIds) {
+      currentUser.friendIds = [];
+    }
+    if (currentUser.friendIds.indexOf(targetUserId) === -1) {
+      currentUser.friendIds.push(targetUserId);
+      currentUser.save();
+    } else {
+      console.log('!!! VALIDATE ADDING DUPLICATED FRIENDS!!! ');
+    }
   }
 }

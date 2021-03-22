@@ -26,12 +26,6 @@ export class AuthController {
     private userService: UsersService,
   ) {}
 
-  @Get('login')
-  @Header('Access-Control-Allow-Origin', '*')
-  testgetLogin() {
-    console.log('test get');
-  }
-
   @Post('login')
   // @UseGuards(LocalAuthGuard)
   @Header('Access-Control-Allow-Origin', '*')
@@ -53,8 +47,17 @@ export class AuthController {
   // @RolesMeta(Roles.Admin)
   @Header('Access-Control-Allow-Origin', '*')
   async getProfile(@Req() request: Request) {
-    const user: any = request.user;
+    const user: any = await this.userService.findByEmail(
+      (request.user as any)?.email,
+    );
 
-    return this.userService.findByEmail(user?.email);
+    if (user) {
+      const { password, ...result } = user;
+      console.log('return user', result);
+
+      return result;
+    }
+
+    return null;
   }
 }

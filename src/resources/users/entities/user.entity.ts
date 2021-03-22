@@ -7,4 +7,5 @@ export class UserEntity {
   password: string;
   email: string;
   roles: Roles[];
+  friendIds: string[];
 }

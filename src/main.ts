@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { SocketIoAdapter } from './shared/adapters/socket-io-3.adapter';
 
 const APP_PORT = 3001;
 
@@ -8,6 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   // const whitelist = ['http://localhost:3000'];
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
   app.enableCors({
     // origin: function (origin, callback) {
     //   console.log('!!!!', origin);

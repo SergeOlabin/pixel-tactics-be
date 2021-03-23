@@ -6,6 +6,7 @@ import { CatsModule } from './resources/cats/cats.module';
 import { GameModule } from './resources/game/game.module';
 import { UsersModule } from './resources/users/users.module';
 import { AuthModule } from './resources/auth/auth.module';
+import { ChatModule } from './resources/chat/chat.module';
 
 // TODO: USE ENV VARS
 const DB_NAME = 'pixel-mongo-db';
@@ -21,6 +22,7 @@ const PASSWORD = 'bB3vKcomXVOtTxxi';
     ),
     UsersModule,
     AuthModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

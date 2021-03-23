@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   // const whitelist = ['http://localhost:3000'];
-  app.useWebSocketAdapter(new SocketIoAdapter(app));
+  app.useWebSocketAdapter(new SocketIoAdapter(app, true));
   app.enableCors({
     // origin: function (origin, callback) {
     //   console.log('!!!!', origin);

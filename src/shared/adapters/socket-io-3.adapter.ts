@@ -42,11 +42,11 @@ export class SocketIoAdapter extends AbstractWsAdapter {
   public createIOServer(port: number, options?: any): any {
     if (this.httpServer && port === 0) {
       const s = new Server(this.httpServer, {
-        // cors: {
-        //   origin: this.corsOrigin,
-        //   methods: ['GET', 'POST'],
-        //   credentials: true,
-        // },
+        cors: {
+          origin: this.corsOrigin,
+          methods: ['GET', 'POST'],
+          credentials: true,
+        },
         cookie: {
           httpOnly: true,
           path: '/',

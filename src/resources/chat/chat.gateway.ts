@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -6,33 +7,34 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { ChatEventsToClient, ChatEventsToServer } from './chat.events';
 import { ChatService } from './chat.service';
-import { Socket, Server } from 'socket.io';
-import { Logger } from '@nestjs/common';
 
 @WebSocketGateway(3002, { namespace: 'chat', transports: ['websocket'] })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server: Server;
+  @WebSocketServer() socket: Socket;
+
   private logger: Logger = new Logger('AppChatGateway');
 
   constructor(private readonly chatService: ChatService) {}
 
-  @SubscribeMessage('msgToServer')
-  receive(client: Socket, payload: string): void {
+  @SubscribeMessage(ChatEventsToServer.MsgToServer)
+  receive(client: Socket, payload: string) {
     this.logger.log(`RECEIVED msgToServer ${client}, ${payload}`);
+    // return { event: 'msgToClient', data: 'SERVER REVEIVED THE MESSAGE' };
   }
 
   send(client: Socket, payload: string): void {
-    this.server.emit('msgToClient', payload);
+    this.socket.emit(ChatEventsToClient.MsgToClient, payload);
   }
 
-  afterInit(server: Server) {
+  afterInit(server: Socket) {
     this.logger.log('Init');
-
-    setTimeout(() => {
-      this.server.emit('msgToClient', 'HELLO SUKA');
-    }, 1000);
+    // this.server.of('/chat').on('create-room', (room) => {
+    //   console.log(`SERVER CREATED A ROOM ${room}`);
+    // });
   }
 
   handleDisconnect(client: Socket) {
@@ -41,5 +43,10 @@ export class ChatGateway
 
   handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(`Client connected: ${client.id}`);
+  }
+
+  // WORKAROUND
+  get server(): Server {
+    return (this.socket as any).server;
   }
 }

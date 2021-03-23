@@ -49,7 +49,10 @@ export class ProfileController {
 
     const info = this.usersService.getUserFriendsInfo(currentUser.sub.id);
 
-    return (await info).map((v) => v.toObject());
+    return (await info).map((f) => {
+      const { password, friendIds, __v, ...rest } = f.toObject();
+      return rest;
+    });
   }
 
   @Post('add-friend')

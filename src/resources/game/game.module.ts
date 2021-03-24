@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
-import { GameService } from './game.service';
+import { GameService } from './services/game.service';
 import { GameGateway } from './game.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GameState, GameStateSchema } from './schemas/game-state.schema';
-import { GamesRegistry } from './registries/games.registry';
+import { ControllerToGamesRegistry } from './registries/game-controllers.registry';
 import { GameController } from './game.controller';
+import { gameStateControllerFactory } from './factories/game-state-controller.factory';
+import { GameStateModelService } from './services/game-state-model.service';
 
 @Module({
   imports: [
@@ -15,7 +17,13 @@ import { GameController } from './game.controller';
       },
     ]),
   ],
-  providers: [GameGateway, GameService, GamesRegistry],
+  providers: [
+    GameGateway,
+    GameService,
+    ControllerToGamesRegistry,
+    GameStateModelService,
+    gameStateControllerFactory,
+  ],
   controllers: [GameController],
 })
 export class GameModule {}

@@ -4,7 +4,7 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { GameService } from './game.service';
+import { GameService } from './services/game.service';
 import { StartGameDto } from './dto/start-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { Socket } from 'socket.io';

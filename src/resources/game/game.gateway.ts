@@ -2,37 +2,22 @@ import {
   WebSocketGateway,
   SubscribeMessage,
   MessageBody,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { GameService } from './game.service';
-import { CreateGameDto } from './dto/create-game.dto';
+import { StartGameDto } from './dto/start-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
+import { Socket } from 'socket.io';
 
 @WebSocketGateway()
 export class GameGateway {
   constructor(private readonly gameService: GameService) {}
 
-  @SubscribeMessage('createGame')
-  create(@MessageBody() createGameDto: CreateGameDto) {
-    return this.gameService.create(createGameDto);
-  }
-
-  @SubscribeMessage('findAllGame')
-  findAll() {
-    return this.gameService.findAll();
-  }
-
-  @SubscribeMessage('findOneGame')
-  findOne(@MessageBody() id: number) {
-    return this.gameService.findOne(id);
-  }
-
-  @SubscribeMessage('updateGame')
-  update(@MessageBody() updateGameDto: UpdateGameDto) {
-    return this.gameService.update(updateGameDto.id, updateGameDto);
-  }
-
-  @SubscribeMessage('removeGame')
-  remove(@MessageBody() id: number) {
-    return this.gameService.remove(id);
+  @SubscribeMessage('startGame')
+  create(
+    @MessageBody() startGameDto: StartGameDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    return this.gameService.startGame(startGameDto.playerIds);
   }
 }

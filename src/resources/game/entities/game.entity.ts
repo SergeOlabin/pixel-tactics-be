@@ -1,1 +1,1 @@
-export class Game {}
+export class GameEntity {}

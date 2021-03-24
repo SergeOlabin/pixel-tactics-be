@@ -1,26 +1,40 @@
 import { Injectable } from '@nestjs/common';
-import { CreateGameDto } from './dto/create-game.dto';
-import { UpdateGameDto } from './dto/update-game.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
+import { BoardStateAddon } from './addons/board-state.addon';
+import { PlayersAddon } from './addons/players-state.addon';
+import { GamesRegistry } from './registries/games.registry';
+import { GameState, GameStateDocumentType } from './schemas/game-state.schema';
 
 @Injectable()
 export class GameService {
-  create(createGameDto: CreateGameDto) {
-    return 'This action adds a new game';
+  private playersAddon = new PlayersAddon();
+  private boardStateAddon = new BoardStateAddon();
+
+  constructor(
+    @InjectModel(GameState.name)
+    private readonly gameStateModel: Model<GameStateDocumentType>,
+    private readonly gamesRegistry: GamesRegistry,
+  ) {}
+
+  startGame(playerIds: string[]) {
+    const _id = uuidv4();
+
+    const gameState = new GameState({
+      _id,
+      board: this.boardStateAddon.createInitBoardState(),
+      players: this.playersAddon.createPlayersState(playerIds),
+    });
+
+    this.gameStateModel.create(gameState);
+
+    this.gamesRegistry.addItems([gameState]);
+
+    return gameState;
   }
 
-  findAll() {
-    return `This action returns all game`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} game`;
-  }
-
-  update(id: number, updateGameDto: UpdateGameDto) {
-    return `This action updates a #${id} game`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} game`;
+  finishGame(gameId: string) {
+    this.gameStateModel.deleteOne({ _id: gameId });
   }
 }

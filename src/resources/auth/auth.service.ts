@@ -3,6 +3,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from '../users/entities/user.entity';
 import { IJwtPayload } from './types/jwt-payload.types';
+import { User } from '../users/schemas/users.schema';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: UserEntity) {
+  async login(user: User) {
     const payload: IJwtPayload = {
       email: user.email,
       sub: {

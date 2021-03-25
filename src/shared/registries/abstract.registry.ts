@@ -56,6 +56,16 @@ export abstract class RegistryService<T = Record<string, unknown>> {
     }
   }
 
+  public removeItems(itemKeys: string[]) {
+    const storageValue: IRegistryMap<T> = this.state$.value;
+
+    itemKeys.forEach((key) => {
+      delete storageValue[key];
+    });
+
+    this.state$.next(storageValue);
+  }
+
   public getItem(id: string): T | undefined {
     return this.state$.value[id];
   }

@@ -26,11 +26,11 @@ export class PlayersAddon {
     };
   }
 
-  private createPlayerState(playerId: string, first: boolean): IPlayerState {
+  private createPlayerState(userId: string, first: boolean): IPlayerState {
     return {
       actions: this.getInitActionsForPlayer(),
       turnState: this.getInitTurnStateForPlayer(first),
-      playerId,
+      userId,
       first,
     };
   }

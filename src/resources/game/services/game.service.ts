@@ -12,9 +12,9 @@ import { PlayersAddon } from '../addons/players-state.addon';
 import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
 import { GameStateControllerFactoryType } from '../factories/game-state-controller.factory';
 import {
-  ControllerToGamesRegistry,
-  IGameControllersCfg,
-} from '../registries/game-controllers.registry';
+  GamesOnlineRegistry,
+  IGameOnlineCfg,
+} from '../registries/games-online.registry';
 import { GameState, GameStateDocumentType } from '../schemas/game-state.schema';
 
 @Injectable()
@@ -25,9 +25,9 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @InjectModel(GameState.name)
     private readonly gameStateModel: Model<GameStateDocumentType>,
-    private readonly gamesRegistry: ControllerToGamesRegistry,
     @Inject(GAME_STATE_CONTROLLER_FACTORY_TOKEN)
     private gameStateControllerFactory: GameStateControllerFactoryType,
+    private readonly gamesRegistry: GamesOnlineRegistry,
   ) {}
 
   onModuleInit() {
@@ -38,8 +38,8 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     this.gamesRegistry.reset();
   }
 
-  startGame(playerIds: string[]) {
-    const _id = uuidv4();
+  startGame(playerIds: string[], id?: string) {
+    const _id = id || uuidv4();
 
     const gameState = new GameState({
       _id,
@@ -68,7 +68,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     console.log('ALL GAMES', JSON.stringify(this.gamesRegistry.getItems()));
   }
 
-  private createGameControllerCfg(_id: string): IGameControllersCfg {
+  private createGameControllerCfg(_id: string): IGameOnlineCfg {
     return {
       _id,
       controller: this.gameStateControllerFactory.create(_id),

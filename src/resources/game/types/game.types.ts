@@ -22,7 +22,7 @@ export enum TurnStage {
 }
 
 export interface IPlayerState {
-  playerId: string;
+  userId: string;
   turnState: ITurnState;
   actions: IActionsState;
   first: boolean;

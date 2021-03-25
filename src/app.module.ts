@@ -11,7 +11,7 @@ import { ChatModule } from './resources/chat/chat.module';
 // TODO: USE ENV VARS
 const DB_NAME = 'pixel-mongo-db';
 const USERNAME = 'serge';
-const PASSWORD = 'bB3vKcomXVOtTxxi';
+const PASSWORD = '823rZWuibNbczsF';
 
 @Module({
   imports: [

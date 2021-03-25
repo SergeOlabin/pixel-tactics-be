@@ -60,6 +60,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() challengeGamePayload: IChallengeGamePayload,
     // @ConnectedSocket() client: Socket,
   ) {
+    this.logger.log(`Challenge Game: ${JSON.stringify(challengeGamePayload)}`);
+
     const gameId = uuidv4();
     const { from, to } = challengeGamePayload;
 
@@ -79,6 +81,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(GameStartEventsToServer.AcceptGame)
   acceptGame(@MessageBody() acceptGamePayload: IAcceptGamePayload) {
+    this.logger.log(`AcceptGame Game: ${JSON.stringify(acceptGamePayload)}`);
+
     const { gameId } = acceptGamePayload;
     const game = this.pendingGamesRegistry.getItem(gameId);
 
@@ -110,6 +114,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       gameId,
     };
 
+    this.logger.log(`sendAcceptRequest: ${JSON.stringify(payload)}`);
+
     this.server
       .to(user.clientId)
       .emit(GameStartEventsToClient.AskAccept, payload);
@@ -130,6 +136,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private startGame(playerIds: string[], id?: string) {
     const gameState = this.gameService.startGame(playerIds, id);
+
+    const clientIds = playerIds.map(
+      (playerId) => this.gameOnlineUsersRegistry.getItem(playerId).clientId,
+    );
+
+    this.server
+      .to(clientIds[0])
+      .to(clientIds[1])
+      .emit(GameStartEventsToClient.StartGame);
+
+    this.logger.log(`STARTED GAME: ${id}`);
     playerIds.forEach((playerId) =>
       this.sendGameStateToPlayer(gameState, playerId),
     );

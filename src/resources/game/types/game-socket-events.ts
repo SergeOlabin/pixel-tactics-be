@@ -1,11 +1,12 @@
 export enum GameStartEventsToServer {
   ChallengeGame = 'challengeGame',
-  AcceptGame = 'startGameAccept',
+  AcceptGame = 'acceptGame',
 }
 
 export enum GameStartEventsToClient {
   AskAccept = 'askAccept',
   SendGameState = 'sendGameState',
+  StartGame = 'startGame',
 }
 
 export interface IChallengeGamePayload {

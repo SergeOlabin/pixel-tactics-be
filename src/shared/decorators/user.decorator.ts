@@ -1,5 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { IJwtPayload } from '../../resources/auth/types/jwt-payload.types';
+import { Socket } from 'socket.io';
 
 export const User = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
@@ -16,8 +17,8 @@ export const User = createParamDecorator(
 export const UserWs = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const context = ctx.switchToWs();
-    const wsClient = context.getClient();
+    const wsClient: Socket = context.getClient();
 
-    return wsClient;
+    return wsClient.handshake.auth;
   },
 );

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GameService } from './services/game.service';
-import { GameGateway } from './game.gateway';
+import { GameInitGateway } from './game.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GameState, GameStateSchema } from './schemas/game-state.schema';
 import { GamesOnlineRegistry } from './registries/games-online.registry';
@@ -21,7 +21,7 @@ import { GameStateToUserAdapterService } from './adapters/game-state-to-user.ada
     ]),
   ],
   providers: [
-    GameGateway,
+    GameInitGateway,
     GameStateToUserAdapterService,
     GameService,
     GamesOnlineRegistry,
@@ -31,5 +31,6 @@ import { GameStateToUserAdapterService } from './adapters/game-state-to-user.ada
     gameStateControllerFactory,
   ],
   controllers: [GameController],
+  exports: [GameInitGateway],
 })
 export class GameModule {}

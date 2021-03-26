@@ -5,7 +5,7 @@ export enum ChatEventsToClient {
 export enum ChatEventsToServer {
   OpenChat = 'openChat',
   CloseChat = 'closeChat',
-  SendToServer = 'sendToServer',
+  SendMessage = 'sendToServer',
 }
 
 export interface IOpenChatPayload {

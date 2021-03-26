@@ -5,6 +5,7 @@ import { UsersOnlineRegistry } from '../../shared/services/users-online.registry
 import { ChatRoomsRegistry } from './registry/chat-rooms.registry';
 
 @Module({
-  providers: [ChatGateway, ChatService, UsersOnlineRegistry, ChatRoomsRegistry],
+  providers: [ChatGateway, ChatService, ChatRoomsRegistry],
+  exports: [ChatGateway],
 })
 export class ChatModule {}

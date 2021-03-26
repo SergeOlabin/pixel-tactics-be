@@ -1,14 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { RegistryService } from '../registries/abstract.registry';
+
+export interface IUserOnlineCfg {
+  userId: string;
+  clientId: string;
+}
 
 @Injectable()
-export class UsersOnlineRegistry {
-  private onlineMap: Record<string, boolean> = {};
-
-  setUserOnline(userId: string, online: boolean) {
-    this.onlineMap[userId] = online;
+export class UsersOnlineRegistry extends RegistryService<IUserOnlineCfg> {
+  getItemKey(item: IUserOnlineCfg) {
+    return item.userId;
   }
 
   isUserOnline(userId: string) {
-    return this.onlineMap[userId];
+    return Boolean(this.getItem(userId));
   }
 }

@@ -1,65 +1,32 @@
 import { Logger } from '@nestjs/common';
-import {
-  MessageBody,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
-  WsException,
-} from '@nestjs/websockets';
+import { WebSocketServer, WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { GameStateToUserAdapterService } from './adapters/game-state-to-user.adapter';
-import { GameOnlineUsersRegistry } from './registries/game-online-users.registry';
-import { PendingGamesRegistry } from './registries/pending-games.registry';
-import { GameState } from './schemas/game-state.schema';
-import { GameService } from './services/game.service';
+import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
 import {
   GameStartEventsToClient,
-  GameStartEventsToServer,
   IAcceptGamePayload,
   IAskAcceptPayload,
   IChallengeGamePayload,
-} from './types/game-socket-events';
+} from '../app-gateway/types/game-start-socket-events';
+import { GameStateToUserAdapterService } from './adapters/game-state-to-user.adapter';
+import { PendingGamesRegistry } from './registries/pending-games.registry';
+import { GameState } from './schemas/game-state.schema';
+import { GameService } from './services/game.service';
 
-@WebSocketGateway({ namespace: 'game', transports: ['websocket'] })
-export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class GameInitGateway {
   @WebSocketServer() server: Socket;
 
   private logger: Logger = new Logger('AppChatGateway');
 
   constructor(
     private readonly gameService: GameService,
+    private readonly usersOnlineRegistry: UsersOnlineRegistry,
     private readonly pendingGamesRegistry: PendingGamesRegistry,
-    private readonly gameOnlineUsersRegistry: GameOnlineUsersRegistry,
     private readonly gameStateToUserAdapterService: GameStateToUserAdapterService,
   ) {}
 
-  handleConnection(client: Socket, ...args: any[]) {
-    const { id } = client.handshake.auth;
-
-    this.gameOnlineUsersRegistry.addItems([
-      {
-        userId: id,
-        clientId: client.id,
-      },
-    ]);
-    this.logger.log(`Client connected: ${client.id} ${id}`);
-  }
-
-  handleDisconnect(client: Socket) {
-    const { id } = client.handshake.auth;
-
-    this.gameOnlineUsersRegistry.removeItems([id]);
-    this.logger.log(`Client disconnected: ${client.id} ${id}`);
-  }
-
-  @SubscribeMessage(GameStartEventsToServer.ChallengeGame)
-  challengeGame(
-    @MessageBody() challengeGamePayload: IChallengeGamePayload,
-    // @ConnectedSocket() client: Socket,
-  ) {
+  challengeGame(challengeGamePayload: IChallengeGamePayload) {
     this.logger.log(`Challenge Game: ${JSON.stringify(challengeGamePayload)}`);
 
     const gameId = uuidv4();
@@ -79,8 +46,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  @SubscribeMessage(GameStartEventsToServer.AcceptGame)
-  acceptGame(@MessageBody() acceptGamePayload: IAcceptGamePayload) {
+  acceptGame(acceptGamePayload: IAcceptGamePayload) {
     this.logger.log(`AcceptGame Game: ${JSON.stringify(acceptGamePayload)}`);
 
     const { gameId } = acceptGamePayload;
@@ -103,7 +69,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     gameId: string;
     from: string;
   }) {
-    const user = this.gameOnlineUsersRegistry.getItem(to);
+    const user = this.usersOnlineRegistry.getItem(to);
 
     if (!user) {
       throw new WsException(`User not found online ${to}`);
@@ -127,7 +93,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       userId,
     );
 
-    const clientId = this.gameOnlineUsersRegistry.getItem(userId).clientId;
+    const clientId = this.usersOnlineRegistry.getItem(userId).clientId;
 
     this.server
       .to(clientId)
@@ -138,7 +104,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const gameState = this.gameService.startGame(playerIds, id);
 
     const clientIds = playerIds.map(
-      (playerId) => this.gameOnlineUsersRegistry.getItem(playerId).clientId,
+      (playerId) => this.usersOnlineRegistry.getItem(playerId).clientId,
     );
 
     this.server

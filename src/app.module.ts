@@ -7,6 +7,9 @@ import { GameModule } from './resources/game/game.module';
 import { UsersModule } from './resources/users/users.module';
 import { AuthModule } from './resources/auth/auth.module';
 import { ChatModule } from './resources/chat/chat.module';
+import { AppGateway } from './resources/app-gateway/app.gateway';
+import { AppGatewayAddonsService } from './resources/app-gateway/app-gateway-addons';
+import { UsersOnlineRegistry } from './shared/services/users-online.registry';
 
 // TODO: USE ENV VARS
 const DB_NAME = 'pixel-mongo-db';
@@ -25,6 +28,11 @@ const PASSWORD = '823rZWuibNbczsF';
     ChatModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    UsersOnlineRegistry,
+    AppGateway,
+    AppGatewayAddonsService,
+  ],
 })
 export class AppModule {}

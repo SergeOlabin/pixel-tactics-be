@@ -8,12 +8,14 @@ import {
   Post,
   Req,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { AddFriendDto } from '../users/dto/add-friend.dto';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { IJwtPayload } from './types/jwt-payload.types';
 import { Request } from 'express';
+import { User } from '../../shared/decorators/user.decorator';
 
 @Controller('profile')
 export class ProfileController {
@@ -37,17 +39,11 @@ export class ProfileController {
 
   @Get('friends')
   @UseGuards(JwtAuthGuard)
-  async getFriendsInfo(@Req() request: Request) {
-    const currentUser = request.user as IJwtPayload;
-
-    if (!currentUser) {
-      throw new HttpException(
-        'CURRENT USER UNAVAILABLE',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-
-    const info = this.usersService.getUserFriendsInfo(currentUser.sub.id);
+  async getFriendsInfo(
+    @User(new ValidationPipe({ validateCustomDecorators: true }))
+    user: IJwtPayload,
+  ) {
+    const info = this.usersService.getUserFriendsInfo(user.sub.id);
 
     return (await info).map((f) => {
       const { password, friendIds, __v, ...rest } = f.toObject();

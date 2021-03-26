@@ -5,26 +5,10 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Attach to Process",
       "type": "node",
-      "request": "launch",
-      "name": "Debug Nest Framework",
-      "args": ["${workspaceFolder}/src/main.ts"],
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
-      "cwd": "${workspaceRoot}",
-      "protocol": "inspector"
-    },
-    {
-      "type": "pwa-node",
       "request": "attach",
-      "name": "Attach",
-      // "skipFiles": [
-      //   "<node_internals>/**"
-      // ],
-      // "preLaunchTask": "tsc: build - tsconfig.json",
-      // "outFiles": [
-      //   "${workspaceFolder}/dist/**/*.js"
-      // ]
+      "port": 9229
     }
   ]
 }

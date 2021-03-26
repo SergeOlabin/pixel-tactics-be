@@ -9,7 +9,7 @@ import { AuthModule } from './resources/auth/auth.module';
 import { ChatModule } from './resources/chat/chat.module';
 import { AppGateway } from './resources/app-gateway/app.gateway';
 import { AppGatewayAddonsService } from './resources/app-gateway/app-gateway-addons';
-import { UsersOnlineRegistry } from './shared/services/users-online.registry';
+import { UsersOnlineModule } from './shared/services/users-online.module';
 
 // TODO: USE ENV VARS
 const DB_NAME = 'pixel-mongo-db';
@@ -26,13 +26,9 @@ const PASSWORD = '823rZWuibNbczsF';
     UsersModule,
     AuthModule,
     ChatModule,
+    UsersOnlineModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    UsersOnlineRegistry,
-    AppGateway,
-    AppGatewayAddonsService,
-  ],
+  providers: [AppService, AppGateway, AppGatewayAddonsService],
 })
 export class AppModule {}

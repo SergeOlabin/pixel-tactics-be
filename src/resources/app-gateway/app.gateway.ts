@@ -35,19 +35,21 @@ export class AppGateway {
     private addons: AppGatewayAddonsService,
   ) {}
 
-  handleConnection(client: Socket, @UserWs() userCfg: Record<string, any>) {
-    this.logger.log(`handleConnection clientCfg ${userCfg}`);
+  handleConnection(client: Socket) {
+    const { id } = client.handshake.auth;
+    this.logger.log(`handleConnection clientCfg ${id}`);
     this.usersOnlineRegistry.addItems([
       {
-        userId: userCfg.id,
+        userId: id,
         clientId: client.id,
       },
     ]);
   }
 
-  handleDisconnect(client: Socket, @UserWs() clientCfg: Record<string, any>) {
-    this.logger.log(`handleDisconnect clientCfg ${clientCfg}`);
-    this.usersOnlineRegistry.removeItems([clientCfg.id]);
+  handleDisconnect(client: Socket) {
+    const { id } = client.handshake.auth;
+    this.logger.log(`handleDisconnect clientCfg ${id}`);
+    this.usersOnlineRegistry.removeItems([id]);
   }
 
   afterInit(server: any) {

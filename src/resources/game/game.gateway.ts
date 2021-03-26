@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { WebSocketServer, WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +14,7 @@ import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { GameState } from './schemas/game-state.schema';
 import { GameService } from './services/game.service';
 
+@Injectable()
 export class GameInitGateway {
   @WebSocketServer() server: Socket;
 

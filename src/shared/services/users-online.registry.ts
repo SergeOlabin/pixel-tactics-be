@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { RegistryService } from '../registries/abstract.registry';
 
 export interface IUserOnlineCfg {

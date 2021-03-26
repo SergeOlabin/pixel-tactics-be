@@ -1,25 +1,18 @@
-import { HttpException, HttpStatus, Logger } from '@nestjs/common';
-import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  OnGatewayInit,
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
+import { Injectable, Logger } from '@nestjs/common';
+import { SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
 import {
+  ChatEventsToClient,
   ChatEventsToServer,
   IMessagePayload,
-  ChatEventsToClient,
   IOpenChatPayload,
 } from '../app-gateway/types/chat-socket-events';
-
 import { ChatService } from './chat.service';
 import { ChatRoomsRegistry } from './registry/chat-rooms.registry';
 
 // @WebSocketGateway(3002, { namespace: 'chat', transports: ['websocket'] })
+@Injectable()
 export class ChatGateway {
   @WebSocketServer() socket: Socket;
 
@@ -45,6 +38,7 @@ export class ChatGateway {
   }
 
   openChat(payload: IOpenChatPayload, client: Socket) {
+    console.log('payload: IOpenChatPayload', payload);
     const room = this.chatRoomsRegistry.getRoomFor(Object.values(payload));
     client.join(room.id);
   }

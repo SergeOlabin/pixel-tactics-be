@@ -10,6 +10,7 @@ import { GameStateModelService } from './services/game-state-model.service';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { GameOnlineUsersRegistry } from './registries/game-online-users.registry';
 import { GameStateToUserAdapterService } from './adapters/game-state-to-user.adapter';
+import { UsersOnlineModule } from '../../shared/services/users-online.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { GameStateToUserAdapterService } from './adapters/game-state-to-user.ada
         schema: GameStateSchema,
       },
     ]),
+    UsersOnlineModule,
   ],
   providers: [
     GameInitGateway,

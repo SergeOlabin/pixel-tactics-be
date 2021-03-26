@@ -8,8 +8,6 @@ export const User = createParamDecorator(
     const wsContext = ctx.switchToWs();
     const wsClient = wsContext.getClient();
 
-    console.log('wsContext', wsContext);
-    console.log('wsClient', wsClient);
     return request.user as IJwtPayload;
   },
 );

@@ -11,6 +11,7 @@ export class ChatRoomsRegistry {
   private rooms: Record<string, IRoomCfg> = {};
 
   getRoomFor(memberIds: string[]) {
+    console.log(' getRoomFor(memberIds', memberIds);
     const room = this.findRoomBy(memberIds);
     if (room) return room;
 
@@ -32,7 +33,7 @@ export class ChatRoomsRegistry {
   }
 
   findRoomBy(memberIds: string[]): IRoomCfg | undefined {
-    if (memberIds.length !== 2) {
+    if (memberIds.length > 2) {
       throw new HttpException(
         "There's more than two users in the room",
         HttpStatus.INTERNAL_SERVER_ERROR,

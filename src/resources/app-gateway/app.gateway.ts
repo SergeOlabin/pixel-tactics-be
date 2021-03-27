@@ -8,24 +8,26 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsResponse,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { AppGatewayAddonsService } from './app-gateway-addons';
-import { UserWs } from '../../shared/decorators/user.decorator';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
+import { AppGatewayAddonsService } from './app-gateway-addons';
 import {
   ChatEventsToServer,
   IMessagePayload,
   IOpenChatPayload,
 } from './types/chat-socket-events';
 import {
-  GameStartEventsToServer,
+  GameInitEventsToServer,
   IAcceptGamePayload,
   IChallengeGamePayload,
-} from './types/game-start-socket-events';
+  IDeclineGamePayload,
+} from './types/game-init-socket-events';
 
 @WebSocketGateway({ transports: ['websocket'] })
-export class AppGateway {
+export class AppGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   private logger: Logger = new Logger('AppGateway');
   @WebSocketServer()
   private server: Socket;
@@ -77,16 +79,21 @@ export class AppGateway {
     this.addons.chat.closeChat(payload, client);
   }
 
-  @SubscribeMessage(GameStartEventsToServer.ChallengeGame)
+  @SubscribeMessage(GameInitEventsToServer.ChallengeGame)
   challengeGame(
     @MessageBody() challengeGamePayload: IChallengeGamePayload,
     // @ConnectedSocket() client: Socket,
-  ) {
-    this.addons.gameInit.challengeGame(challengeGamePayload);
+  ): WsResponse {
+    return this.addons.gameInit.challengeGame(challengeGamePayload);
   }
 
-  @SubscribeMessage(GameStartEventsToServer.AcceptGame)
+  @SubscribeMessage(GameInitEventsToServer.AcceptGame)
   acceptGame(@MessageBody() acceptGamePayload: IAcceptGamePayload) {
     this.addons.gameInit.acceptGame(acceptGamePayload);
+  }
+
+  @SubscribeMessage(GameInitEventsToServer.DeclineGame)
+  declineGame(declineGamePayload: IDeclineGamePayload) {
+    this.addons.gameInit.declineGame(declineGamePayload);
   }
 }

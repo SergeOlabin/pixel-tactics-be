@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GameService } from './services/game.service';
-import { GameInitGateway } from './game.gateway';
+import { GameInitGateway } from './game-init.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GameState, GameStateSchema } from './schemas/game-state.schema';
 import { GamesOnlineRegistry } from './registries/games-online.registry';

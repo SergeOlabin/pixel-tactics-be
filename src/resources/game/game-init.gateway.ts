@@ -1,15 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { WebSocketServer, WsException } from '@nestjs/websockets';
+import { WebSocketServer, WsException, WsResponse } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
 import { BaseGatewayAddon } from '../app-gateway/base-gateway-addon';
 import {
-  GameStartEventsToClient,
+  GameInitEventsToClient,
   IAcceptGamePayload,
   IAskAcceptPayload,
   IChallengeGamePayload,
-} from '../app-gateway/types/game-start-socket-events';
+  IDeclineGamePayload,
+} from '../app-gateway/types/game-init-socket-events';
 import { GameStateToUserAdapterService } from './adapters/game-state-to-user.adapter';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { GameState } from './schemas/game-state.schema';
@@ -28,11 +29,11 @@ export class GameInitGateway extends BaseGatewayAddon {
     super();
   }
 
-  challengeGame(challengeGamePayload: IChallengeGamePayload) {
-    this.logger.log(`Challenge Game: ${JSON.stringify(challengeGamePayload)}`);
+  challengeGame(payload: IChallengeGamePayload): WsResponse {
+    this.logger.log(`Challenge Game: ${JSON.stringify(payload)}`);
 
     const gameId = uuidv4();
-    const { from, to } = challengeGamePayload;
+    const { from, to } = payload;
 
     this.pendingGamesRegistry.addItems([
       {
@@ -46,12 +47,17 @@ export class GameInitGateway extends BaseGatewayAddon {
       from,
       gameId,
     });
+
+    return {
+      event: GameInitEventsToClient.ChallengeGameResponse,
+      data: { gameId: gameId },
+    };
   }
 
-  acceptGame(acceptGamePayload: IAcceptGamePayload) {
-    this.logger.log(`AcceptGame Game: ${JSON.stringify(acceptGamePayload)}`);
+  acceptGame(payload: IAcceptGamePayload) {
+    this.logger.log(`AcceptGame Game: ${JSON.stringify(payload)}`);
 
-    const { gameId } = acceptGamePayload;
+    const { gameId } = payload;
     const game = this.pendingGamesRegistry.getItem(gameId);
 
     if (!game) {
@@ -60,6 +66,25 @@ export class GameInitGateway extends BaseGatewayAddon {
 
     this.startGame(game.playerIds, game.id);
     this.pendingGamesRegistry.removeItems([gameId]);
+  }
+
+  declineGame(payload: IDeclineGamePayload) {
+    this.logger.log(`declineGame: ${JSON.stringify(payload)}`);
+
+    const { gameId } = payload;
+    const game = this.pendingGamesRegistry.getItem(gameId);
+
+    if (!game) {
+      throw new WsException(`Pending game not found ${gameId}`);
+    }
+
+    this.pendingGamesRegistry.removeItems([gameId]);
+    this.server
+      .to(game.playerIds[0])
+      .to(game.playerIds[1])
+      .emit(GameInitEventsToClient.GameDeclined, {
+        from: payload.from,
+      });
   }
 
   sendAcceptRequest({
@@ -86,7 +111,7 @@ export class GameInitGateway extends BaseGatewayAddon {
 
     this.server
       .to(user.clientId)
-      .emit(GameStartEventsToClient.AskAccept, payload);
+      .emit(GameInitEventsToClient.AskAccept, payload);
   }
 
   sendGameStateToPlayer(gameState: GameState, userId: string) {
@@ -99,7 +124,7 @@ export class GameInitGateway extends BaseGatewayAddon {
 
     this.server
       .to(clientId)
-      .emit(GameStartEventsToClient.SendGameState, adaptedState);
+      .emit(GameInitEventsToClient.SendGameState, adaptedState);
   }
 
   private startGame(playerIds: string[], id?: string) {
@@ -112,7 +137,7 @@ export class GameInitGateway extends BaseGatewayAddon {
     this.server
       .to(clientIds[0])
       .to(clientIds[1])
-      .emit(GameStartEventsToClient.StartGame);
+      .emit(GameInitEventsToClient.StartGame);
 
     this.logger.log(`STARTED GAME: ${id}`);
     playerIds.forEach((playerId) =>

@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
+import { BaseGatewayAddon } from '../app-gateway/base-gateway-addon';
+
 import {
   ChatEventsToClient,
   ChatEventsToServer,
@@ -13,16 +15,20 @@ import { ChatRoomsRegistry } from './registry/chat-rooms.registry';
 
 // @WebSocketGateway(3002, { namespace: 'chat', transports: ['websocket'] })
 @Injectable()
-export class ChatGateway {
-  @WebSocketServer() socket: Socket;
-
+export class ChatGateway extends BaseGatewayAddon {
   private logger: Logger = new Logger('AppChatGateway');
 
   constructor(
     private readonly chatService: ChatService,
     private readonly usersOnlineService: UsersOnlineRegistry,
     private readonly chatRoomsRegistry: ChatRoomsRegistry,
-  ) {}
+  ) {
+    super();
+  }
+
+  setServer(server: Socket): void {
+    this.server = server;
+  }
 
   receiveMessage(payload: IMessagePayload) {
     if (this.usersOnlineService.isUserOnline(payload.to)) {
@@ -32,7 +38,7 @@ export class ChatGateway {
       ]);
 
       if (room) {
-        this.socket.to(room.id).emit(ChatEventsToClient.SendToClient);
+        this.server.to(room.id).emit(ChatEventsToClient.SendToClient, payload);
       }
     }
   }
@@ -57,10 +63,5 @@ export class ChatGateway {
     if (!isSomebodyHere) {
       this.chatRoomsRegistry.closeRoom(room.id);
     }
-  }
-
-  // WORKAROUND
-  get server(): Server {
-    return (this.socket as any).server;
   }
 }

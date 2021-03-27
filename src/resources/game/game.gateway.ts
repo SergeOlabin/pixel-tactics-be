@@ -3,6 +3,7 @@ import { WebSocketServer, WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
+import { BaseGatewayAddon } from '../app-gateway/base-gateway-addon';
 import {
   GameStartEventsToClient,
   IAcceptGamePayload,
@@ -15,9 +16,7 @@ import { GameState } from './schemas/game-state.schema';
 import { GameService } from './services/game.service';
 
 @Injectable()
-export class GameInitGateway {
-  @WebSocketServer() server: Socket;
-
+export class GameInitGateway extends BaseGatewayAddon {
   private logger: Logger = new Logger('AppChatGateway');
 
   constructor(
@@ -25,7 +24,9 @@ export class GameInitGateway {
     private readonly usersOnlineRegistry: UsersOnlineRegistry,
     private readonly pendingGamesRegistry: PendingGamesRegistry,
     private readonly gameStateToUserAdapterService: GameStateToUserAdapterService,
-  ) {}
+  ) {
+    super();
+  }
 
   challengeGame(challengeGamePayload: IChallengeGamePayload) {
     this.logger.log(`Challenge Game: ${JSON.stringify(challengeGamePayload)}`);

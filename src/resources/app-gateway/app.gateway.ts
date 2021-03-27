@@ -52,8 +52,8 @@ export class AppGateway {
     this.usersOnlineRegistry.removeItems([id]);
   }
 
-  afterInit(server: any) {
-    // throw new Error('Method not implemented.');
+  afterInit() {
+    this.addons.setServerToAddons(this.server);
   }
 
   @SubscribeMessage(ChatEventsToServer.SendMessage)

@@ -93,7 +93,7 @@ export class AppGateway
   }
 
   @SubscribeMessage(GameInitEventsToServer.DeclineGame)
-  declineGame(declineGamePayload: IDeclineGamePayload) {
+  declineGame(@MessageBody() declineGamePayload: IDeclineGamePayload) {
     this.addons.gameInit.declineGame(declineGamePayload);
   }
 }

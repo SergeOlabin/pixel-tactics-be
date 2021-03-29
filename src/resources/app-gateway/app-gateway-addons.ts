@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io/dist/socket';
 import { ChatGateway } from '../chat/chat.gateway';
-import { GameInitGateway } from '../game/game-init.gateway';
+import { GameInitGateway } from '../game-init/game-init.gateway';
 
 @Injectable()
 export class AppGatewayAddonsService {

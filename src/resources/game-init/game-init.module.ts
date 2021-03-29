@@ -4,7 +4,6 @@ import { GameInitGateway } from './game-init.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GameState, GameStateSchema } from './schemas/game-state.schema';
 import { GamesOnlineRegistry } from './registries/games-online.registry';
-import { GameController } from './game.controller';
 import { gameStateControllerFactory } from './factories/game-state-controller.factory';
 import { GameStateModelService } from './services/game-state-model.service';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
@@ -32,7 +31,6 @@ import { UsersOnlineModule } from '../../shared/services/users-online.module';
     GameStateModelService,
     gameStateControllerFactory,
   ],
-  controllers: [GameController],
   exports: [GameInitGateway],
 })
-export class GameModule {}
+export class GameInitModule {}

@@ -78,10 +78,14 @@ export class GameInitGateway extends BaseGatewayAddon {
       throw new WsException(`Pending game not found ${gameId}`);
     }
 
+    const clientIds = game.playerIds.map(
+      (playerId) => this.usersOnlineRegistry.getItem(playerId).clientId,
+    );
+
     this.pendingGamesRegistry.removeItems([gameId]);
     this.server
-      .to(game.playerIds[0])
-      .to(game.playerIds[1])
+      .to(clientIds[0])
+      .to(clientIds[1])
       .emit(GameInitEventsToClient.GameDeclined, {
         from: payload.from,
       });

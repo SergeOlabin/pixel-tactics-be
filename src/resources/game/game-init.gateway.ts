@@ -16,6 +16,11 @@ import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { GameState } from './schemas/game-state.schema';
 import { GameInitService } from './services/game-init.service';
 import { GamesOnlineRegistry } from './registries/games-online.registry';
+import {
+  IGameState,
+  IGameStateAdaptedToPlayer,
+} from '../../game-data/types/game-types';
+import { SelectLeaderEvent } from '../app-gateway/types/game-socket-events';
 
 @Injectable()
 export class GameInitGateway extends BaseGatewayAddon {
@@ -120,7 +125,7 @@ export class GameInitGateway extends BaseGatewayAddon {
       .emit(GameInitEventsToClient.AskAccept, payload);
   }
 
-  updateStateForGame(gameId: string, gameState: GameState) {
+  sendUpdatedGameState(gameId: string, gameState: GameState) {
     const game = this.gamesOnlineRegistry.getItem(gameId);
     const userIds = game.userIds;
 
@@ -135,17 +140,24 @@ export class GameInitGateway extends BaseGatewayAddon {
 
     const clientId = this.usersOnlineRegistry.getItem(userId).clientId;
 
-    console.log('EMITTING GAME STATE', clientId, JSON.stringify(adaptedState));
+    this.logger.log(`
+      EMITTING GAME STATE,
+      ${clientId},
+      `);
+    // ${JSON.stringify(adaptedState)},
 
     this.server
       .to(clientId)
       .emit(GameInitEventsToClient.SendGameState, adaptedState);
   }
 
-  private startGame(playerIds: string[], id?: string) {
-    const gameState = this.gameInitService.startGame(playerIds, id);
+  private async startGame(userIds: string[], id?: string) {
+    const [gameState, gameId] = await this.gameInitService.startGame(
+      userIds,
+      id,
+    );
 
-    const clientIds = playerIds.map(
+    const clientIds = userIds.map(
       (playerId) => this.usersOnlineRegistry.getItem(playerId).clientId,
     );
 
@@ -155,8 +167,39 @@ export class GameInitGateway extends BaseGatewayAddon {
       .emit(GameInitEventsToClient.StartGame);
 
     this.logger.log(`STARTED GAME: ${id}`);
-    playerIds.forEach((playerId) =>
+    userIds.forEach((playerId) =>
       this.sendGameStateToPlayer(gameState, playerId),
     );
+
+    this.sendSelectLeader(userIds, gameId);
+  }
+
+  private async sendSelectLeader(userIds: string[], gameId: string) {
+    const clientIds = userIds.map(
+      (playerId) => this.usersOnlineRegistry.getItem(playerId).clientId,
+    );
+    const controller = this.gamesOnlineRegistry.getItem(gameId).controller;
+
+    await controller.drawCard(
+      {
+        gameId,
+        userId: userIds[0],
+      },
+      4,
+    );
+
+    const updatedState = await controller.drawCard(
+      {
+        gameId,
+        userId: userIds[1],
+      },
+      4,
+    );
+
+    this.sendUpdatedGameState(gameId, updatedState);
+
+    clientIds.forEach((clientId) => {
+      this.server.to(clientId).emit(SelectLeaderEvent.ToClient);
+    });
   }
 }

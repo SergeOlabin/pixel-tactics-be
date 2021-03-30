@@ -31,15 +31,15 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
     private readonly gamesRegistry: GamesOnlineRegistry,
   ) {}
 
-  onModuleInit() {
-    this.addGameStatesFromDbToRegistry();
+  async onModuleInit() {
+    await this.addGameStatesFromDbToRegistry();
   }
 
   onModuleDestroy() {
     this.gamesRegistry.reset();
   }
 
-  startGame(playerIds: string[], id?: string) {
+  async startGame(playerIds: string[], id?: string) {
     const _id = id || uuidv4();
 
     const board = this.boardStateAddon.createInitBoardState();
@@ -52,12 +52,12 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
       turn,
     });
 
-    this.gameStateModel.create(gameState);
+    await this.gameStateModel.create(gameState);
 
     // add to registry
     this.gamesRegistry.addItems([this.createGameControllerCfg(_id, playerIds)]);
 
-    return gameState;
+    return [gameState, _id];
   }
 
   finishGame(gameId: string) {

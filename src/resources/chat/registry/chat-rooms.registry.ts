@@ -11,7 +11,6 @@ export class ChatRoomsRegistry {
   private rooms: Record<string, IRoomCfg> = {};
 
   getRoomFor(memberIds: string[]) {
-    console.log(' getRoomFor(memberIds', memberIds);
     const room = this.findRoomBy(memberIds);
     if (room) return room;
 

@@ -30,8 +30,10 @@ import {
 } from './types/game-init-socket-events';
 import {
   DrawCardEvent,
+  IBaseGameEventPayload,
   IDrawCardPayload,
   PlayCardEvent,
+  SelectLeaderEvent,
 } from './types/game-socket-events';
 
 @WebSocketGateway({ transports: ['websocket'] })
@@ -109,10 +111,23 @@ export class AppGateway
 
   // @SubscribeMessage(PlayCardEvent.ToServer)
   @SubscribeMessage(DrawCardEvent.ToServer)
-  async subscribeGameEvent(@MessageBody() payload: IDrawCardPayload) {
+  async drawCardEvent(@MessageBody() payload: IDrawCardPayload) {
     const controller = this.gamesOnlineRegistry.getItem(payload.gameId)
       .controller;
     const updatedState = await controller.drawCard(payload);
-    this.addons.gameInit.updateStateForGame(payload.gameId, updatedState);
+    this.addons.gameInit.sendUpdatedGameState(payload.gameId, updatedState);
+  }
+
+  @SubscribeMessage(SelectLeaderEvent.ToSever)
+  async selectLeaderFromClient(
+    @MessageBody() payload: IBaseGameEventPayload,
+    @ConnectedSocket() client: Socket,
+  ) {
+    // await this.drawCardEvent({
+    //   ...payload,
+    //   cardsAmount: 4,
+    // });
+    // const { id } = client.handshake.auth;
+    // this.server.to(id).emit(SelectLeaderEvent.ToClient);
   }
 }

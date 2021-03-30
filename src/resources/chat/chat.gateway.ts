@@ -44,7 +44,6 @@ export class ChatGateway extends BaseGatewayAddon {
   }
 
   openChat(payload: IOpenChatPayload, client: Socket) {
-    console.log('payload: IOpenChatPayload', payload);
     const room = this.chatRoomsRegistry.getRoomFor(Object.values(payload));
     client.join(room.id);
   }

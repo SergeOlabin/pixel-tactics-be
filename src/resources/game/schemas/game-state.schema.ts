@@ -10,7 +10,7 @@ import { Document } from 'mongoose';
 
 export type GameStateDocumentType = GameState & Document;
 
-@Schema({ _id: false })
+@Schema()
 export class GameState implements IGameState {
   @Prop()
   _id: string;

@@ -10,6 +10,6 @@ import { GameState, GameStateDocumentType } from '../schemas/game-state.schema';
 export class GameStateModelService {
   constructor(
     @InjectModel(GameState.name)
-    public readonly gameStateModel: Model<GameStateDocumentType>,
+    public gameStateModel: Model<GameStateDocumentType>,
   ) {}
 }

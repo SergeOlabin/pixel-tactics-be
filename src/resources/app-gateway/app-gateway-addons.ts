@@ -10,9 +10,7 @@ export class AppGatewayAddonsService {
     public chat: ChatGateway,
     public gameInit: GameInitGateway,
     public game: GameGatewayService,
-  ) {
-    console.log('UUID', this.game.uuid);
-  }
+  ) {}
 
   setServerToAddons(sever: Socket) {
     this.chat.setServer(sever);

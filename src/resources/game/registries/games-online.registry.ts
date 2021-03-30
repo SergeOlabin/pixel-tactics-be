@@ -8,6 +8,10 @@ export interface IGameOnlineCfg {
   controller: GameStateController;
 }
 
+/**
+ * Some mapping for actual games,
+ * for now contains controllers for each game
+ */
 @Injectable()
 export class GamesOnlineRegistry extends RegistryService<IGameOnlineCfg> {
   protected getItemKey(item: IGameOnlineCfg): string {

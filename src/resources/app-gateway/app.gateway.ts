@@ -12,6 +12,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
+import { GamesOnlineRegistry } from '../game/registries/games-online.registry';
 import { AppGatewayAddonsService } from './app-gateway-addons';
 import {
   ChatEventsToServer,
@@ -24,6 +25,11 @@ import {
   IChallengeGamePayload,
   IDeclineGamePayload,
 } from './types/game-init-socket-events';
+import {
+  DrawCardEvent,
+  IDrawCardPayload,
+  PlayCardEvent,
+} from './types/game-socket-events';
 
 @WebSocketGateway({ transports: ['websocket'] })
 export class AppGateway
@@ -34,7 +40,8 @@ export class AppGateway
 
   constructor(
     private readonly usersOnlineRegistry: UsersOnlineRegistry,
-    private addons: AppGatewayAddonsService,
+    private readonly gamesOnlineRegistry: GamesOnlineRegistry,
+    private readonly addons: AppGatewayAddonsService,
   ) {}
 
   handleConnection(client: Socket) {
@@ -95,5 +102,12 @@ export class AppGateway
   @SubscribeMessage(GameInitEventsToServer.DeclineGame)
   declineGame(@MessageBody() declineGamePayload: IDeclineGamePayload) {
     this.addons.gameInit.declineGame(declineGamePayload);
+  }
+
+  // @SubscribeMessage(PlayCardEvent.ToServer)
+  @SubscribeMessage(DrawCardEvent.ToServer)
+  subscribeGameEvent(@MessageBody() payload: IDrawCardPayload) {
+    const controller = this.gamesOnlineRegistry.getItem(payload.gameId)
+      .controller;
   }
 }

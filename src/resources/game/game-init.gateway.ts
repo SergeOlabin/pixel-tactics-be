@@ -11,17 +11,17 @@ import {
   IChallengeGamePayload,
   IDeclineGamePayload,
 } from '../app-gateway/types/game-init-socket-events';
-import { GameStateToUserAdapterService } from './adapters/game-state-to-user.adapter';
+import { GameStateToUserAdapterService } from '../../shared/services/game-state-to-user-adapter/game-state-to-user-adapter.service';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { GameState } from './schemas/game-state.schema';
-import { GameService } from './services/game.service';
+import { GameInitService } from './services/game-init.service';
 
 @Injectable()
 export class GameInitGateway extends BaseGatewayAddon {
   private logger: Logger = new Logger('AppChatGateway');
 
   constructor(
-    private readonly gameService: GameService,
+    private readonly gameInitService: GameInitService,
     private readonly usersOnlineRegistry: UsersOnlineRegistry,
     private readonly pendingGamesRegistry: PendingGamesRegistry,
     private readonly gameStateToUserAdapterService: GameStateToUserAdapterService,
@@ -132,7 +132,7 @@ export class GameInitGateway extends BaseGatewayAddon {
   }
 
   private startGame(playerIds: string[], id?: string) {
-    const gameState = this.gameService.startGame(playerIds, id);
+    const gameState = this.gameInitService.startGame(playerIds, id);
 
     const clientIds = playerIds.map(
       (playerId) => this.usersOnlineRegistry.getItem(playerId).clientId,

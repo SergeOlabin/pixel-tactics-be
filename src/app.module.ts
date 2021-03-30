@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CatsModule } from './resources/cats/cats.module';
-import { GameInitModule } from './resources/game-init/game-init.module';
+import { GameModule } from './resources/game/game.module';
 import { UsersModule } from './resources/users/users.module';
 import { AuthModule } from './resources/auth/auth.module';
 import { ChatModule } from './resources/chat/chat.module';
@@ -19,7 +19,7 @@ const PASSWORD = '823rZWuibNbczsF';
 @Module({
   imports: [
     CatsModule,
-    GameInitModule,
+    GameModule,
     MongooseModule.forRoot(
       `mongodb+srv://${USERNAME}:${PASSWORD}@pixel-cluster-0.zvzvy.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`,
     ),

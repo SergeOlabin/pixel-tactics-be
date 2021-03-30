@@ -18,7 +18,7 @@ import {
 import { GameState, GameStateDocumentType } from '../schemas/game-state.schema';
 
 @Injectable()
-export class GameService implements OnModuleInit, OnModuleDestroy {
+export class GameInitService implements OnModuleInit, OnModuleDestroy {
   private playersAddon = new PlayersAddon();
   private boardStateAddon = new BoardStateAddon();
 

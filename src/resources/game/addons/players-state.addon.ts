@@ -6,7 +6,7 @@ import {
   Players,
   TurnStage,
   Waves,
-} from '../types/game.types';
+} from '../../../game-data/types/game-types';
 
 export class PlayersAddon {
   public createPlayersState(playerIds: string[]): IPlayersState {
@@ -28,7 +28,7 @@ export class PlayersAddon {
 
   private createPlayerState(userId: string, first: boolean): IPlayerState {
     return {
-      actions: this.getInitActionsForPlayer(),
+      actionsMeta: this.getInitActionsForPlayer(),
       turnState: this.getInitTurnStateForPlayer(first),
       userId,
       first,

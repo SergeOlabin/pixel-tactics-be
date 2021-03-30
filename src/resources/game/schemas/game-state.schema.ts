@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import {
-  IBoardState,
   IBoardStateClass,
   IGameState,
   IPlayersState,
   IPlayersStateClass,
-} from '../types/game.types';
+} from '../../../game-data/types/game-types';
 import { Document } from 'mongoose';
 
 export type GameStateDocumentType = GameState & Document;
@@ -16,7 +15,7 @@ export class GameState implements IGameState {
   _id: string;
 
   @Prop({ type: IBoardStateClass })
-  board: IBoardState;
+  board: IBoardStateClass;
 
   @Prop({ type: IPlayersStateClass })
   players: IPlayersState;
@@ -27,7 +26,7 @@ export class GameState implements IGameState {
     players,
   }: {
     _id: string;
-    board: IBoardState;
+    board: IBoardStateClass;
     players: IPlayersState;
   }) {
     this._id = _id;

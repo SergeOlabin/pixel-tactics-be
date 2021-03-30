@@ -15,6 +15,7 @@ import { GameStateToUserAdapterService } from '../../shared/services/game-state-
 import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { GameState } from './schemas/game-state.schema';
 import { GameInitService } from './services/game-init.service';
+import { GamesOnlineRegistry } from './registries/games-online.registry';
 
 @Injectable()
 export class GameInitGateway extends BaseGatewayAddon {
@@ -24,6 +25,7 @@ export class GameInitGateway extends BaseGatewayAddon {
     private readonly gameInitService: GameInitService,
     private readonly usersOnlineRegistry: UsersOnlineRegistry,
     private readonly pendingGamesRegistry: PendingGamesRegistry,
+    private readonly gamesOnlineRegistry: GamesOnlineRegistry,
     private readonly gameStateToUserAdapterService: GameStateToUserAdapterService,
   ) {
     super();
@@ -118,7 +120,14 @@ export class GameInitGateway extends BaseGatewayAddon {
       .emit(GameInitEventsToClient.AskAccept, payload);
   }
 
-  sendGameStateToPlayer(gameState: GameState, userId: string) {
+  updateStateForGame(gameId: string, gameState: GameState) {
+    const game = this.gamesOnlineRegistry.getItem(gameId);
+    const userIds = game.userIds;
+
+    userIds.forEach((userId) => this.sendGameStateToPlayer(gameState, userId));
+  }
+
+  private sendGameStateToPlayer(gameState: GameState, userId: string) {
     const adaptedState = this.gameStateToUserAdapterService.adapt(
       gameState,
       userId,

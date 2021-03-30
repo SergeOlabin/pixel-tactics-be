@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
+import { IPlayerState } from '../../../game-data/types/game-types';
 import { BoardStateAddon } from '../addons/board-state.addon';
 import { PlayersAddon } from '../addons/players-state.addon';
 import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
@@ -50,7 +51,7 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
     this.gameStateModel.create(gameState);
 
     // add to registry
-    this.gamesRegistry.addItems([this.createGameControllerCfg(_id)]);
+    this.gamesRegistry.addItems([this.createGameControllerCfg(_id, playerIds)]);
 
     return gameState;
   }
@@ -60,17 +61,24 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async addGameStatesFromDbToRegistry() {
-    const cfgMaps = (await this.gameStateModel.find().exec()).map((v) =>
-      this.createGameControllerCfg(v._id),
-    );
+    const cfgMaps = (await this.gameStateModel.find().exec()).map((v) => {
+      const playersState = Object.values(v.players) as IPlayerState[];
+      const userIds = playersState.map((state) => state.userId);
+
+      return this.createGameControllerCfg(v._id, userIds);
+    });
 
     this.gamesRegistry.addItems(cfgMaps);
     console.log('ALL GAMES', JSON.stringify(this.gamesRegistry.getItems()));
   }
 
-  private createGameControllerCfg(_id: string): IGameOnlineCfg {
+  private createGameControllerCfg(
+    _id: string,
+    userIds: string[],
+  ): IGameOnlineCfg {
     return {
       _id,
+      userIds,
       controller: this.gameStateControllerFactory.create(_id),
     };
   }

@@ -5,6 +5,7 @@ export enum DrawCardEvent {
 export interface IDrawCardPayload {
   gameId: string;
   userId: string;
+  cardsAmount: number;
 }
 
 export enum PlayCardEvent {

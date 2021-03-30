@@ -11,8 +11,10 @@ import {
   WsResponse,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { GameStateToUserAdapterService } from '../../shared/services/game-state-to-user-adapter/game-state-to-user-adapter.service';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
 import { GamesOnlineRegistry } from '../game/registries/games-online.registry';
+import { GameState } from '../game/schemas/game-state.schema';
 import { AppGatewayAddonsService } from './app-gateway-addons';
 import {
   ChatEventsToServer,
@@ -20,6 +22,7 @@ import {
   IOpenChatPayload,
 } from './types/chat-socket-events';
 import {
+  GameInitEventsToClient,
   GameInitEventsToServer,
   IAcceptGamePayload,
   IChallengeGamePayload,
@@ -106,8 +109,10 @@ export class AppGateway
 
   // @SubscribeMessage(PlayCardEvent.ToServer)
   @SubscribeMessage(DrawCardEvent.ToServer)
-  subscribeGameEvent(@MessageBody() payload: IDrawCardPayload) {
+  async subscribeGameEvent(@MessageBody() payload: IDrawCardPayload) {
     const controller = this.gamesOnlineRegistry.getItem(payload.gameId)
       .controller;
+    const updatedState = await controller.drawCard(payload);
+    this.addons.gameInit.updateStateForGame(payload.gameId, updatedState);
   }
 }

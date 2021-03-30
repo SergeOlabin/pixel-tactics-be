@@ -74,11 +74,14 @@ export class IBoardStateClass {
 export class IPlayerBoard {
   hand: IPlayerHand;
   unit: IPlayerUnit;
-  deck: CharacterList[];
+  deck: {
+    cards: CharacterList[];
+    cardsLeft: number;
+  };
 }
 
 export class IPlayerHand {
-  cards: IBoardCard[];
+  cards: CharacterList[];
 }
 
 export class IBoardCard {

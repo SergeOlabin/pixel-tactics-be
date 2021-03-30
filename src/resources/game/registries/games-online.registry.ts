@@ -5,6 +5,7 @@ import { GameStateController } from '../factories/game-state-controller.factory'
 export interface IGameOnlineCfg {
   // mongoDB gameState _id
   _id: string;
+  userIds: string[];
   controller: GameStateController;
 }
 

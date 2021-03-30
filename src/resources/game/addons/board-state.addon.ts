@@ -2,6 +2,8 @@ import { CharacterList } from '../../../game-data/types/character-list';
 import { IBoardStateClass, Players } from '../../../game-data/types/game-types';
 import { shuffle } from '../../../shared/helpers/shuffle';
 
+const CARDS_AMOUNT = 25;
+
 export class BoardStateAddon {
   public createInitBoardState(): IBoardStateClass {
     return {
@@ -10,14 +12,20 @@ export class BoardStateAddon {
           cards: [],
         },
         unit: {},
-        deck: shuffle(Object.values(CharacterList)),
+        deck: {
+          cards: shuffle(Object.values(CharacterList)),
+          cardsLeft: CARDS_AMOUNT,
+        },
       },
       [Players.Red]: {
         hand: {
           cards: [],
         },
         unit: {},
-        deck: Object.values(CharacterList),
+        deck: {
+          cards: shuffle(Object.values(CharacterList)),
+          cardsLeft: CARDS_AMOUNT,
+        },
       },
     };
   }

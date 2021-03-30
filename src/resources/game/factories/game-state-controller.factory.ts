@@ -1,5 +1,5 @@
 import { FactoryProvider, OnModuleInit } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Query } from 'mongoose';
 import { Players } from '../../../game-data/types/game-types';
 import { IDrawCardPayload } from '../../app-gateway/types/game-socket-events';
 import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
@@ -30,7 +30,11 @@ export type GameStateControllerFactoryType = {
 };
 
 export class GameStateController implements OnModuleInit {
-  private gameState: GameStateDocumentType;
+  private gameStateQuery: Query<
+    GameStateDocumentType,
+    GameStateDocumentType,
+    Record<string, any>
+  >;
 
   constructor(
     private gameId: string,
@@ -41,15 +45,22 @@ export class GameStateController implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.gameState = await this.gameStateModel.findById(this.gameId).exec();
+    this.gameStateQuery = this.gameStateModel.findById(this.gameId);
   }
 
   async drawCard(payload: IDrawCardPayload, cardsAmount = 1) {
     const { userId } = payload;
-    const gameState = await this.gameStateModel.findById(this.gameId).exec();
+    const gameState = await this.gameStateQuery.exec();
     const playerColor = this.getPlayerColor(gameState, userId);
+    const playerBoard = gameState.board[playerColor];
 
-    const board = gameState.board[playerColor];
+    const cards = playerBoard.deck.cards.splice(0, cardsAmount);
+    playerBoard.hand.cards.push(...cards);
+    gameState.players[playerColor].actionsMeta.available -= 1;
+
+    await gameState.save();
+
+    return gameState.toObject();
   }
 
   private getPlayerColor(gameState: GameState, userId: string): Players {

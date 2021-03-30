@@ -36,6 +36,7 @@ export interface IGameStateAdaptedToPlayer {
   players: IPlayersState;
   board: IBoardStateAdaptedToPlayer;
   hand: IPlayerHand;
+  turn: Players;
 }
 
 export interface IBoardStateAdaptedToPlayer

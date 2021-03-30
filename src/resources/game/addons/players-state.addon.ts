@@ -10,7 +10,7 @@ import {
 
 export class PlayersAddon {
   public createPlayersState(playerIds: string[]): [IPlayersState, Players] {
-    const firstPlayer = (this.roll() ? playerIds[0] : playerIds[1]) as Players;
+    const firstPlayer = this.roll() ? playerIds[0] : playerIds[1];
     const bluePlayer = this.roll() ? playerIds[0] : playerIds[1];
     const redPlayer = playerIds.find((id) => id !== bluePlayer);
 
@@ -25,7 +25,9 @@ export class PlayersAddon {
       ),
     };
 
-    return [state, firstPlayer];
+    const first = firstPlayer === bluePlayer ? Players.Blue : Players.Red;
+
+    return [state, first];
   }
 
   private createPlayerState(userId: string, first: boolean): IPlayerState {

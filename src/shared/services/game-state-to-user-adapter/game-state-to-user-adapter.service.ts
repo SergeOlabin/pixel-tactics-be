@@ -9,7 +9,7 @@ import { GameState } from '../../../resources/game/schemas/game-state.schema';
 @Injectable()
 export class GameStateToUserAdapterService {
   public adapt(game: GameState, userId: string): IGameStateAdaptedToPlayer {
-    const { _id, board, players } = game;
+    const { _id, board, players, turn } = game;
     const playerColor = Object.keys(players).find(
       (key) => players[key].userId === userId,
     );
@@ -32,6 +32,7 @@ export class GameStateToUserAdapterService {
       players,
       hand,
       board: adaptedBoard,
+      turn,
     };
   }
 }

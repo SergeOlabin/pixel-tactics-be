@@ -15,11 +15,7 @@ export const gameStateControllerFactory: FactoryProvider = {
   ) => {
     return {
       create: (gameId: string) =>
-        new GameStateController(
-          gameId,
-          gameStateModel.gameStateModel,
-          gameGatewayService,
-        ),
+        new GameStateController(gameId, gameStateModel.gameStateModel),
     };
   },
   inject: [GameStateModelService, GameGatewayService],
@@ -39,10 +35,7 @@ export class GameStateController implements OnModuleInit {
   constructor(
     private gameId: string,
     private readonly gameStateModel: Model<GameStateDocumentType>,
-    private readonly gameGatewayService: GameGatewayService,
-  ) {
-    console.log('uuid', this.gameGatewayService.uuid());
-  }
+  ) {}
 
   async onModuleInit() {
     this.gameStateQuery = this.gameStateModel.findById(this.gameId);

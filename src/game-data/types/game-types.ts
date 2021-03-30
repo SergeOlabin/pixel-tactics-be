@@ -28,6 +28,7 @@ export interface IGameState {
   // meta: IGameMeta;
   board: IBoardStateClass;
   players: IPlayersState;
+  turn: Players;
 }
 
 export interface IGameStateAdaptedToPlayer {

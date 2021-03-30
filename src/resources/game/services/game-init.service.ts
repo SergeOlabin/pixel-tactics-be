@@ -42,10 +42,14 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
   startGame(playerIds: string[], id?: string) {
     const _id = id || uuidv4();
 
+    const board = this.boardStateAddon.createInitBoardState();
+    const [players, turn] = this.playersAddon.createPlayersState(playerIds);
+
     const gameState = new GameState({
       _id,
-      board: this.boardStateAddon.createInitBoardState(),
-      players: this.playersAddon.createPlayersState(playerIds),
+      board,
+      players,
+      turn,
     });
 
     this.gameStateModel.create(gameState);

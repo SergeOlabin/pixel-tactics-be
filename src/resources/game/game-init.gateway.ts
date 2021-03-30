@@ -135,6 +135,8 @@ export class GameInitGateway extends BaseGatewayAddon {
 
     const clientId = this.usersOnlineRegistry.getItem(userId).clientId;
 
+    console.log('EMITTING GAME STATE', clientId, JSON.stringify(adaptedState));
+
     this.server
       .to(clientId)
       .emit(GameInitEventsToClient.SendGameState, adaptedState);

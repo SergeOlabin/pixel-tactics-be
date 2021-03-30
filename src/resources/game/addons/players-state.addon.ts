@@ -9,12 +9,12 @@ import {
 } from '../../../game-data/types/game-types';
 
 export class PlayersAddon {
-  public createPlayersState(playerIds: string[]): IPlayersState {
-    const firstPlayer = this.roll() ? playerIds[0] : playerIds[1];
+  public createPlayersState(playerIds: string[]): [IPlayersState, Players] {
+    const firstPlayer = (this.roll() ? playerIds[0] : playerIds[1]) as Players;
     const bluePlayer = this.roll() ? playerIds[0] : playerIds[1];
     const redPlayer = playerIds.find((id) => id !== bluePlayer);
 
-    return {
+    const state = {
       [Players.Blue]: this.createPlayerState(
         bluePlayer,
         firstPlayer === bluePlayer,
@@ -24,6 +24,8 @@ export class PlayersAddon {
         firstPlayer === redPlayer,
       ),
     };
+
+    return [state, firstPlayer];
   }
 
   private createPlayerState(userId: string, first: boolean): IPlayerState {

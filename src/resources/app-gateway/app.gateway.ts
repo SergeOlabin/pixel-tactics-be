@@ -11,10 +11,8 @@ import {
   WsResponse,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { GameStateToUserAdapterService } from '../../shared/services/game-state-to-user-adapter/game-state-to-user-adapter.service';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
 import { GamesOnlineRegistry } from '../game/registries/games-online.registry';
-import { GameState } from '../game/schemas/game-state.schema';
 import { AppGatewayAddonsService } from './app-gateway-addons';
 import {
   ChatEventsToServer,
@@ -22,19 +20,12 @@ import {
   IOpenChatPayload,
 } from './types/chat-socket-events';
 import {
-  GameInitEventsToClient,
   GameInitEventsToServer,
   IAcceptGamePayload,
   IChallengeGamePayload,
   IDeclineGamePayload,
 } from './types/game-init-socket-events';
-import {
-  DrawCardEvent,
-  IBaseGameEventPayload,
-  IDrawCardPayload,
-  PlayCardEvent,
-  SelectLeaderEvent,
-} from './types/game-socket-events';
+import { GameEvent, IDrawCardPayload, IGameEvent } from './types/game-events';
 
 @WebSocketGateway({ transports: ['websocket'] })
 export class AppGateway
@@ -109,20 +100,15 @@ export class AppGateway
     this.addons.gameInit.declineGame(declineGamePayload);
   }
 
-  // @SubscribeMessage(PlayCardEvent.ToServer)
-  @SubscribeMessage(DrawCardEvent.ToServer)
-  async drawCardEvent(@MessageBody() payload: IDrawCardPayload) {
-    const controller = this.gamesOnlineRegistry.getItem(payload.gameId)
-      .controller;
-    const updatedState = await controller.drawCard(payload);
-    this.addons.gameInit.sendUpdatedGameState(payload.gameId, updatedState);
-  }
-
-  @SubscribeMessage(SelectLeaderEvent.ToSever)
+  @SubscribeMessage(GameEvent.ToServer)
   async selectLeaderFromClient(
-    @MessageBody() payload: IBaseGameEventPayload,
+    @MessageBody() event: IGameEvent,
     @ConnectedSocket() client: Socket,
   ) {
+    const controller = this.gamesOnlineRegistry.getItem(event.gameId)
+      .controller;
+    const updatedState = await controller.handleEvent(event);
+    this.addons.gameInit.sendUpdatedGameState(event.gameId, updatedState);
     // await this.drawCardEvent({
     //   ...payload,
     //   cardsAmount: 4,

@@ -1,7 +1,13 @@
 import { FactoryProvider, OnModuleInit } from '@nestjs/common';
-import { Model, Query } from 'mongoose';
+import { LeanDocument, Model, Query } from 'mongoose';
 import { Players } from '../../../game-data/types/game-types';
-import { IDrawCardPayload } from '../../app-gateway/types/game-socket-events';
+import { EffectTypes } from '../../app-gateway/types/game-effect';
+import {
+  GameEventTypes,
+  IBaseGameEventPayload,
+  IDrawCardPayload,
+  IGameEvent,
+} from '../../app-gateway/types/game-events';
 import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
 import { GameGatewayService } from '../game.gateway';
 import { GameState, GameStateDocumentType } from '../schemas/game-state.schema';
@@ -22,16 +28,25 @@ export type GameStateControllerFactoryType = {
   create: (gameId: string) => GameStateController;
 };
 
-type QueryType = Query<GameStateDocumentType, GameStateDocumentType, {}>;
-
 export class GameStateController {
-  private query: QueryType;
-
   constructor(
     private gameId: string,
     private readonly gameStateModel: Model<GameStateDocumentType>,
-  ) {
-    // this.query = this.gameStateModel.findById(this.gameId);
+  ) {}
+
+  async handleEvent(
+    event: IGameEvent,
+  ): Promise<LeanDocument<GameStateDocumentType>> {
+    switch (event.type) {
+      case GameEventTypes.DrawCard:
+        return await this.drawCard(event.payload as IDrawCardPayload);
+
+      case GameEventTypes.DrawCardsForLeader:
+        return await this.drawCard(event.payload as IBaseGameEventPayload);
+
+      default:
+        break;
+    }
   }
 
   async drawCard(payload: IDrawCardPayload, cardsAmount = 1) {
@@ -44,6 +59,7 @@ export class GameStateController {
     const cards = playerBoard.deck.cards.splice(0, cardsAmount || 1);
     playerBoard.hand.cards.push(...cards);
     gameState.players[playerColor].actionsMeta.available -= 1;
+    gameState.board[playerColor].deck.cardsLeft -= cardsAmount;
 
     gameState.markModified('board');
     gameState.markModified('players');
@@ -52,7 +68,24 @@ export class GameStateController {
     return gameState.toObject();
   }
 
-  async getCardsForLeader() {}
+  async getCardsForLeader(payload: IBaseGameEventPayload) {
+    const initDrawAmount = 4;
+
+    const { userId } = payload;
+
+    const gameState = await this.getModel();
+    const playerColor = this.getPlayerColor(gameState, userId);
+    const playerBoard = gameState.board[playerColor];
+
+    const cards = playerBoard.deck.cards.splice(0, initDrawAmount);
+    playerBoard.hand.cards.push(...cards);
+    gameState.board[playerColor].deck.cardsLeft -= initDrawAmount;
+
+    gameState.markModified('board');
+    gameState.markModified('players');
+    await gameState.save();
+    return gameState.toObject();
+  }
 
   private getPlayerColor(gameState: GameState, userId: string): Players {
     const players = gameState.players;

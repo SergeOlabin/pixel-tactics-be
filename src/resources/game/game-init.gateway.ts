@@ -20,7 +20,6 @@ import {
   IGameState,
   IGameStateAdaptedToPlayer,
 } from '../../game-data/types/game-types';
-import { SelectLeaderEvent } from '../app-gateway/types/game-socket-events';
 
 @Injectable()
 export class GameInitGateway extends BaseGatewayAddon {
@@ -170,36 +169,4 @@ export class GameInitGateway extends BaseGatewayAddon {
     userIds.forEach((playerId) =>
       this.sendGameStateToPlayer(gameState, playerId),
     );
-
-    this.sendSelectLeader(userIds, gameId);
   }
-
-  private async sendSelectLeader(userIds: string[], gameId: string) {
-    const clientIds = userIds.map(
-      (playerId) => this.usersOnlineRegistry.getItem(playerId).clientId,
-    );
-    const controller = this.gamesOnlineRegistry.getItem(gameId).controller;
-
-    await controller.drawCard(
-      {
-        gameId,
-        userId: userIds[0],
-      },
-      4,
-    );
-
-    const updatedState = await controller.drawCard(
-      {
-        gameId,
-        userId: userIds[1],
-      },
-      4,
-    );
-
-    this.sendUpdatedGameState(gameId, updatedState);
-
-    clientIds.forEach((clientId) => {
-      this.server.to(clientId).emit(SelectLeaderEvent.ToClient);
-    });
-  }
-}

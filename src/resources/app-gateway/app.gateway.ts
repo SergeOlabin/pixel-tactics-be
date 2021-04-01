@@ -20,12 +20,13 @@ import {
   IOpenChatPayload,
 } from './types/chat-socket-events';
 import {
+  GameEvent,
   GameInitEventsToServer,
   IAcceptGamePayload,
   IChallengeGamePayload,
   IDeclineGamePayload,
-} from './types/game-init-socket-events';
-import { GameEvent, IDrawCardPayload, IGameEvent } from './types/game-events';
+  IGameEvent,
+} from './types/game-socket-events';
 
 @WebSocketGateway({ transports: ['websocket'] })
 export class AppGateway

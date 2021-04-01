@@ -1,3 +1,17 @@
+import { GameEventTypes } from './game-event-types';
+
+// general
+export enum GameEvent {
+  ToServer = 'GameEvent/ToServer',
+  ToClient = 'GameEvent/ToClient',
+}
+
+export interface IGameEvent {
+  type: GameEventTypes;
+  gameId: string;
+  payload: unknown;
+}
+
 export enum GameInitEventsToServer {
   ChallengeGame = 'challengeGame',
   AcceptGame = 'acceptGame',

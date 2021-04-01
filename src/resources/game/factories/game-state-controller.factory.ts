@@ -6,10 +6,9 @@ import {
   GameEventTypes,
   IBaseGameEventPayload,
   IDrawCardPayload,
-  IGameEvent,
-} from '../../app-gateway/types/game-events';
+} from '../../app-gateway/types/game-event-types';
+import { IGameEvent } from '../../app-gateway/types/game-socket-events';
 import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
-import { GameGatewayService } from '../game.gateway';
 import { GameState, GameStateDocumentType } from '../schemas/game-state.schema';
 import { GameStateModelService } from '../services/game-state-model.service';
 

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GameInitService } from './services/game-init.service';
-import { GameInitGateway } from './game-init.gateway';
+import { GameGateway } from './game.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GameState, GameStateSchema } from './schemas/game-state.schema';
 import { GamesOnlineRegistry } from './registries/games-online.registry';
@@ -9,7 +9,6 @@ import { GameStateModelService } from './services/game-state-model.service';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { UsersOnlineModule } from '../../shared/services/users-online.module';
 import { GameStateToUserAdapterModule } from '../../shared/services/game-state-to-user-adapter/game-state-to-user.adapter.module';
-import { GameGatewayService } from './game.gateway';
 
 @Module({
   imports: [
@@ -23,14 +22,13 @@ import { GameGatewayService } from './game.gateway';
     GameStateToUserAdapterModule,
   ],
   providers: [
-    GameInitGateway,
-    GameGatewayService,
+    GameGateway,
     GameInitService,
     GamesOnlineRegistry,
     PendingGamesRegistry,
     GameStateModelService,
     gameStateControllerFactory,
   ],
-  exports: [GameInitGateway, GameGatewayService, GamesOnlineRegistry],
+  exports: [GameGateway, GamesOnlineRegistry],
 })
 export class GameModule {}

@@ -1,15 +1,3 @@
-// general
-export enum GameEvent {
-  ToServer = 'GameEvent/ToServer',
-  ToClient = 'GameEvent/ToClient',
-}
-
-export interface IGameEvent {
-  type: GameEventTypes;
-  gameId: string;
-  payload: unknown;
-}
-
 // types
 export enum GameEventTypes {
   DrawCard = 'drawCard',

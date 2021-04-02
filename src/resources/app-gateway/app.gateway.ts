@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,22 +8,27 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
   WsResponse,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { IGameState } from '../../game-data/types/game-types';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
 import { GamesOnlineRegistry } from '../game/registries/games-online.registry';
 import { AppGatewayAddonsService } from './app-gateway-addons';
+import { GameEventDto } from './dto/game-event.dto';
 import {
   ChatEventsToServer,
   IMessagePayload,
   IOpenChatPayload,
 } from './types/chat-socket-events';
+import { GameEventTypesToClient } from './types/game-event-types';
 import {
   GameEvent,
   GameInitEventsToServer,
   IAcceptGamePayload,
   IChallengeGamePayload,
+  ICheckForExistingGamePayload,
   IDeclineGamePayload,
   IGameEvent,
 } from './types/game-socket-events';
@@ -101,15 +106,48 @@ export class AppGateway
     this.addons.gameInit.declineGame(declineGamePayload);
   }
 
+  @SubscribeMessage(GameInitEventsToServer.CheckForExistingGame)
+  async checkForExistingGame(
+    @MessageBody() payload: ICheckForExistingGamePayload,
+  ) {
+    const { userId } = payload;
+    const games = this.gamesOnlineRegistry.getItems();
+
+    const game = games.find((game) => game.userIds.includes(userId));
+
+    if (!game) {
+      this.logger.log(`NO requested game found for user ${userId}`);
+      return;
+    }
+
+    const gameState = await game.controller.getState();
+
+    this.addons.gameInit.sendGameStateToPlayer(gameState, userId);
+  }
+
   @SubscribeMessage(GameEvent.ToServer)
+  @UsePipes(new ValidationPipe())
   async selectLeaderFromClient(
-    @MessageBody() event: IGameEvent,
+    @MessageBody() event: GameEventDto,
     @ConnectedSocket() client: Socket,
   ) {
+    this.logger.log(`Received: ${event.type}`);
+
     const controller = this.gamesOnlineRegistry.getItem(event.gameId)
       .controller;
-    const updatedState = await controller.handleEvent(event);
+    let updatedState, responseEvent;
+    try {
+      [updatedState, responseEvent] = await controller.handleEvent(event);
+    } catch (error) {
+      throw new WsException(error);
+    }
     this.addons.gameInit.sendUpdatedGameState(event.gameId, updatedState);
+
+    if (responseEvent) {
+      client.join('temp');
+      this.server.to('temp').emit(responseEvent);
+      client.leave('temp');
+    }
     // await this.drawCardEvent({
     //   ...payload,
     //   cardsAmount: 4,

@@ -1,11 +1,17 @@
 import { FactoryProvider, OnModuleInit } from '@nestjs/common';
 import { LeanDocument, Model, Query } from 'mongoose';
-import { Players } from '../../../game-data/types/game-types';
+import {
+  IGameState,
+  IPlayerBoard,
+  Players,
+} from '../../../game-data/types/game-types';
 import { EffectTypes } from '../../app-gateway/types/game-effect';
 import {
   GameEventTypes,
+  GameEventTypesToClient,
   IBaseGameEventPayload,
   IDrawCardPayload,
+  ISelectLeaderPayload,
 } from '../../app-gateway/types/game-event-types';
 import { IGameEvent } from '../../app-gateway/types/game-socket-events';
 import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
@@ -35,13 +41,19 @@ export class GameStateController {
 
   async handleEvent(
     event: IGameEvent,
-  ): Promise<LeanDocument<GameStateDocumentType>> {
+  ): Promise<[IGameState, GameEventTypesToClient] | [IGameState]> {
     switch (event.type) {
       case GameEventTypes.DrawCard:
-        return await this.drawCard(event.payload as IDrawCardPayload);
+        return [await this.drawCard(event.payload as IDrawCardPayload)];
 
       case GameEventTypes.DrawCardsForLeader:
-        return await this.drawCard(event.payload as IBaseGameEventPayload);
+        return [
+          await this.getCardsForLeader(event.payload as IBaseGameEventPayload),
+          GameEventTypesToClient.SelectLeaderReq,
+        ];
+
+      case GameEventTypes.SelectLeader:
+        return [await this.setLeader(event.payload as ISelectLeaderPayload)];
 
       default:
         break;
@@ -49,11 +61,7 @@ export class GameStateController {
   }
 
   async drawCard(payload: IDrawCardPayload, cardsAmount = 1) {
-    const { userId } = payload;
-
-    const gameState = await this.getModel();
-    const playerColor = this.getPlayerColor(gameState, userId);
-    const playerBoard = gameState.board[playerColor];
+    const { gameState, playerColor, playerBoard } = await this.prepare(payload);
 
     const cards = playerBoard.deck.cards.splice(0, cardsAmount || 1);
     playerBoard.hand.cards.push(...cards);
@@ -69,20 +77,43 @@ export class GameStateController {
 
   async getCardsForLeader(payload: IBaseGameEventPayload) {
     const initDrawAmount = 4;
-
-    const { userId } = payload;
-
-    const gameState = await this.getModel();
-    const playerColor = this.getPlayerColor(gameState, userId);
-    const playerBoard = gameState.board[playerColor];
+    const { gameState, playerColor, playerBoard } = await this.prepare(payload);
 
     const cards = playerBoard.deck.cards.splice(0, initDrawAmount);
     playerBoard.hand.cards.push(...cards);
     gameState.board[playerColor].deck.cardsLeft -= initDrawAmount;
 
     gameState.markModified('board');
-    gameState.markModified('players');
     await gameState.save();
+
+    return gameState.toObject();
+  }
+
+  async setLeader(payload: ISelectLeaderPayload) {
+    const { gameState, playerBoard } = await this.prepare(payload);
+
+    if (playerBoard.leader?.type) {
+      throw new Error('Leader already set');
+    }
+
+    playerBoard.leader = {
+      type: payload.type,
+    };
+
+    // remove from hand
+    const { cards } = playerBoard.hand;
+    const index = cards.indexOf(payload.type);
+    if (index > -1) {
+      cards.splice(index, 1);
+    }
+
+    gameState.markModified('board');
+    await gameState.save();
+    return gameState.toObject();
+  }
+
+  async getState() {
+    const gameState = await this.getModel();
     return gameState.toObject();
   }
 
@@ -95,5 +126,18 @@ export class GameStateController {
 
   private async getModel() {
     return await this.gameStateModel.findById(this.gameId).exec();
+  }
+  private async prepare(payload: IBaseGameEventPayload) {
+    const { userId } = payload;
+
+    const gameState = await this.getModel();
+    const playerColor = this.getPlayerColor(gameState, userId);
+    const playerBoard = gameState.board[playerColor];
+
+    return {
+      gameState,
+      playerColor,
+      playerBoard,
+    };
   }
 }

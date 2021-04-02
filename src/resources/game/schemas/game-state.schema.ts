@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import {
   IBoardStateClass,
   IGameState,
-  IPlayersState,
   IPlayersStateClass,
   Players,
 } from '../../../game-data/types/game-types';
@@ -15,13 +14,13 @@ export class GameState implements IGameState {
   @Prop()
   _id: string;
 
-  @Prop({ type: IBoardStateClass })
+  @Prop()
   board: IBoardStateClass;
 
-  @Prop({ type: IPlayersStateClass })
-  players: IPlayersState;
+  @Prop()
+  players: IPlayersStateClass;
 
-  @Prop({ type: Players })
+  @Prop()
   turn: Players;
 
   constructor({
@@ -32,7 +31,7 @@ export class GameState implements IGameState {
   }: {
     _id: string;
     board: IBoardStateClass;
-    players: IPlayersState;
+    players: IPlayersStateClass;
     turn: Players;
   }) {
     this._id = _id;

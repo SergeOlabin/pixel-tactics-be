@@ -12,12 +12,13 @@ export class GameStateToUserAdapterService {
     const { _id, board, players, turn } = game;
     const playerColor = Object.keys(players).find(
       (key) => players[key].userId === userId,
-    );
+    ) as Players;
 
     const adaptedBoard = Object.keys(board).reduce(
       (acc: IBoardStateAdaptedToPlayer, playerColor: Players) => {
         acc[playerColor] = {
           unit: board[playerColor].unit,
+          leader: board[playerColor].leader,
         };
 
         return acc;
@@ -33,6 +34,7 @@ export class GameStateToUserAdapterService {
       hand,
       board: adaptedBoard,
       turn,
+      playerColor,
     };
   }
 }

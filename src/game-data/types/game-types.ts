@@ -27,16 +27,17 @@ export interface IGameState {
   _id: string;
   // meta: IGameMeta;
   board: IBoardStateClass;
-  players: IPlayersState;
+  players: IPlayersStateClass;
   turn: Players;
 }
 
 export interface IGameStateAdaptedToPlayer {
   _id: string;
-  players: IPlayersState;
+  players: IPlayersStateClass;
   board: IBoardStateAdaptedToPlayer;
   hand: IPlayerHand;
   turn: Players;
+  playerColor: Players;
 }
 
 export interface IBoardStateAdaptedToPlayer
@@ -50,8 +51,7 @@ export interface IPlayerState {
   first: boolean;
 }
 
-export interface IPlayersState extends Record<Players, IPlayerState> {}
-export class IPlayersStateClass implements IPlayersState {
+export class IPlayersStateClass {
   playerBlue: IPlayerState;
   playerRed: IPlayerState;
 }
@@ -66,7 +66,6 @@ export interface ITurnState {
   state: TurnStage;
 }
 
-// export interface IBoardState {}
 // BOARD
 export class IBoardStateClass {
   playerBlue: IPlayerBoard;
@@ -80,10 +79,15 @@ export class IPlayerBoard {
     cards: CharacterList[];
     cardsLeft: number;
   };
+  leader?: IPlayerLeader;
 }
 
 export class IPlayerHand {
   cards: CharacterList[];
+}
+
+export class IPlayerLeader {
+  type: CharacterList;
 }
 
 export class IBoardCard {

@@ -55,43 +55,6 @@ export class GameGateway extends BaseGatewayAddon {
     };
   }
 
-  acceptGame(payload: IAcceptGamePayload) {
-    this.logger.log(`AcceptGame Game: ${JSON.stringify(payload)}`);
-
-    const { gameId } = payload;
-    const game = this.pendingGamesRegistry.getItem(gameId);
-
-    if (!game) {
-      throw new WsException(`Pending game not found ${gameId}`);
-    }
-
-    this.startGame(game.playerIds, game.id);
-    this.pendingGamesRegistry.removeItems([gameId]);
-  }
-
-  declineGame(payload: IDeclineGamePayload) {
-    this.logger.log(`declineGame: ${JSON.stringify(payload)}`);
-
-    const { gameId } = payload;
-    const game = this.pendingGamesRegistry.getItem(gameId);
-
-    if (!game) {
-      throw new WsException(`Pending game not found ${gameId}`);
-    }
-
-    const clientIds = game.playerIds.map(
-      (playerId) => this.usersOnlineRegistry.getItem(playerId).clientId,
-    );
-
-    this.pendingGamesRegistry.removeItems([gameId]);
-    this.server
-      .to(clientIds[0])
-      .to(clientIds[1])
-      .emit(GameInitEventsToClient.GameDeclined, {
-        from: payload.from,
-      });
-  }
-
   sendAcceptRequest({
     to,
     from,
@@ -119,6 +82,47 @@ export class GameGateway extends BaseGatewayAddon {
       .emit(GameInitEventsToClient.AskAccept, payload);
   }
 
+  async acceptGame(payload: IAcceptGamePayload) {
+    this.logger.log(`AcceptGame Game: ${JSON.stringify(payload)}`);
+
+    const { gameId } = payload;
+    const game = this.pendingGamesRegistry.getItem(gameId);
+
+    if (!game) {
+      throw new WsException(`Pending game not found ${gameId}`);
+    }
+
+    const gameIdReq = await this.startGame(game.playerIds, game.id);
+    this.pendingGamesRegistry.removeItems([gameId]);
+
+    this.gamesOnlineRegistry.addItems([
+      this.gameInitService.createGameControllerCfg(gameIdReq, game.playerIds),
+    ]);
+  }
+
+  declineGame(payload: IDeclineGamePayload) {
+    this.logger.log(`declineGame: ${JSON.stringify(payload)}`);
+
+    const { gameId } = payload;
+    const game = this.pendingGamesRegistry.getItem(gameId);
+
+    if (!game) {
+      throw new WsException(`Pending game not found ${gameId}`);
+    }
+
+    const clientIds = game.playerIds.map(
+      (playerId) => this.usersOnlineRegistry.getItem(playerId).clientId,
+    );
+
+    this.pendingGamesRegistry.removeItems([gameId]);
+    this.server
+      .to(clientIds[0])
+      .to(clientIds[1])
+      .emit(GameInitEventsToClient.GameDeclined, {
+        from: payload.from,
+      });
+  }
+
   sendUpdatedGameState(gameId: string, gameState: GameState) {
     const game = this.gamesOnlineRegistry.getItem(gameId);
     const userIds = game.userIds;
@@ -126,7 +130,7 @@ export class GameGateway extends BaseGatewayAddon {
     userIds.forEach((userId) => this.sendGameStateToPlayer(gameState, userId));
   }
 
-  private sendGameStateToPlayer(gameState: GameState, userId: string) {
+  sendGameStateToPlayer(gameState: GameState, userId: string) {
     const adaptedState = this.gameStateToUserAdapterService.adapt(
       gameState,
       userId,
@@ -138,7 +142,6 @@ export class GameGateway extends BaseGatewayAddon {
       EMITTING GAME STATE,
       ${clientId},
       `);
-    // ${JSON.stringify(adaptedState)},
 
     this.server
       .to(clientId)
@@ -164,5 +167,7 @@ export class GameGateway extends BaseGatewayAddon {
     userIds.forEach((playerId) =>
       this.sendGameStateToPlayer(gameState, playerId),
     );
+
+    return gameId;
   }
 }

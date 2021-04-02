@@ -1,6 +1,6 @@
 import {
   IActionsState,
-  IPlayersState,
+  IPlayersStateClass,
   IPlayerState,
   ITurnState,
   Players,
@@ -9,7 +9,9 @@ import {
 } from '../../../game-data/types/game-types';
 
 export class PlayersAddon {
-  public createPlayersState(playerIds: string[]): [IPlayersState, Players] {
+  public createPlayersState(
+    playerIds: string[],
+  ): [IPlayersStateClass, Players] {
     const firstPlayer = this.roll() ? playerIds[0] : playerIds[1];
     const bluePlayer = this.roll() ? playerIds[0] : playerIds[1];
     const redPlayer = playerIds.find((id) => id !== bluePlayer);

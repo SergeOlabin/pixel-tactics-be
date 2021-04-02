@@ -64,6 +64,14 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
     this.gameStateModel.deleteOne({ _id: gameId });
   }
 
+  createGameControllerCfg(_id: string, userIds: string[]): IGameOnlineCfg {
+    return {
+      _id,
+      userIds,
+      controller: this.gameStateControllerFactory.create(_id),
+    };
+  }
+
   private async addGameStatesFromDbToRegistry() {
     const cfgMaps = (await this.gameStateModel.find().exec()).map((v) => {
       const playersState = Object.values(v.players) as IPlayerState[];
@@ -74,16 +82,5 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
 
     this.gamesRegistry.addItems(cfgMaps);
     console.log('ALL GAMES', JSON.stringify(this.gamesRegistry.getItems()));
-  }
-
-  private createGameControllerCfg(
-    _id: string,
-    userIds: string[],
-  ): IGameOnlineCfg {
-    return {
-      _id,
-      userIds,
-      controller: this.gameStateControllerFactory.create(_id),
-    };
   }
 }

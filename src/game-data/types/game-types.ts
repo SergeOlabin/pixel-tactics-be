@@ -23,6 +23,11 @@ export enum TurnStage {
   Waiting = 'Waiting',
 }
 
+export interface IPlace {
+  wave: Waves;
+  position: Positions;
+}
+
 export interface IGameState {
   _id: string;
   // meta: IGameMeta;

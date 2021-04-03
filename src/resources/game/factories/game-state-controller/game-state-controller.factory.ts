@@ -1,17 +1,13 @@
-import { FactoryProvider, OnModuleInit } from '@nestjs/common';
+import { FactoryProvider } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { LeanDocument, Model, Query } from 'mongoose';
-import {
-  IGameState,
-  IPlayerBoard,
-  Players,
-} from '../../../../game-data/types/game-types';
-import { EffectTypes } from '../../../app-gateway/types/game-effect';
+import { Model } from 'mongoose';
+import { IGameState, Players } from '../../../../game-data/types/game-types';
 import {
   GameEventTypes,
   GameEventTypesToClient,
   IBaseGameEventPayload,
   IDrawCardPayload,
+  IPlayCardPayload,
   ISelectLeaderPayload,
 } from '../../../app-gateway/types/game-event-types';
 import { IGameEvent } from '../../../app-gateway/types/game-socket-events';
@@ -76,7 +72,7 @@ export class GameStateController {
       playerMeta,
     } = await this.prepare(payload);
 
-    if (gameState.players[playerColor].actionsMeta.available <= 0) {
+    if (playerMeta.actionsMeta.available <= 0) {
       throw new WsException('Not enough action points');
     }
 
@@ -140,6 +136,37 @@ export class GameStateController {
     await gameState.save();
     return updatedState.toObject();
   }
+
+  async playCard(payload: IPlayCardPayload) {
+    const { toPlace, cardType } = payload;
+    const { gameState, playerBoard, playerMeta } = await this.prepare(payload);
+
+    if (playerMeta.actionsMeta.available <= 0) {
+      throw new WsException('Not enough action points.');
+    }
+
+    const position = playerBoard.unit[toPlace.wave][toPlace.position];
+
+    if (position) {
+      if (playerMeta.actionsMeta.available <= 0) {
+        throw new WsException('Field is taken byu another hero.');
+      }
+    }
+
+    const { cards } = playerBoard.hand;
+    const cardInHandIdx = cards.findIndex((card) => card === cardType);
+    if (cardInHandIdx < 0) {
+      throw new WsException('Card not found in the players hand.');
+    }
+
+    cards.splice(cardInHandIdx, 1);
+    // TODO: create new Class here
+    // const boardCardModel = {
+
+    // };
+    // playerBoard.unit[toPlace.wave][toPlace.position] =
+  }
+
   async getState() {
     const gameState = await this.getModel();
     return gameState?.toObject();
@@ -155,6 +182,7 @@ export class GameStateController {
   private async getModel() {
     return await this.gameStateModel.findById(this.gameId).exec();
   }
+
   private async prepare(payload: IBaseGameEventPayload) {
     const { userId } = payload;
 

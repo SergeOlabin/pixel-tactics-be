@@ -1,4 +1,5 @@
 import { CharacterList } from '../../../game-data/types/character-list';
+import { IPlace } from '../../../game-data/types/game-types';
 
 // types
 export enum GameEventTypes {
@@ -21,6 +22,12 @@ export interface IDrawCardPayload extends IBaseGameEventPayload {
 
 export interface ISelectLeaderPayload extends IBaseGameEventPayload {
   type: CharacterList;
+}
+
+export interface IPlayCardPayload extends IBaseGameEventPayload {
+  // from hand always
+  toPlace: IPlace;
+  cardType: CharacterList;
 }
 
 export enum GameEventTypesToClient {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RegistryService } from '../../../shared/registries/abstract.registry';
-import { GameStateController } from '../factories/game-state-controller.factory';
+import { GameStateController } from '../factories/game-state-controller/game-state-controller.factory';
 
 export interface IGameOnlineCfg {
   // mongoDB gameState _id

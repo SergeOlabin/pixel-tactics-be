@@ -4,19 +4,23 @@ import {
   IGameState,
   IPlayerBoard,
   Players,
-} from '../../../game-data/types/game-types';
-import { EffectTypes } from '../../app-gateway/types/game-effect';
+} from '../../../../game-data/types/game-types';
+import { EffectTypes } from '../../../app-gateway/types/game-effect';
 import {
   GameEventTypes,
   GameEventTypesToClient,
   IBaseGameEventPayload,
   IDrawCardPayload,
   ISelectLeaderPayload,
-} from '../../app-gateway/types/game-event-types';
-import { IGameEvent } from '../../app-gateway/types/game-socket-events';
-import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
-import { GameState, GameStateDocumentType } from '../schemas/game-state.schema';
-import { GameStateModelService } from '../services/game-state-model.service';
+} from '../../../app-gateway/types/game-event-types';
+import { IGameEvent } from '../../../app-gateway/types/game-socket-events';
+import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../../constants/tokens';
+import {
+  GameState,
+  GameStateDocumentType,
+} from '../../schemas/game-state.schema';
+import { GameStateModelService } from '../../services/game-state-model.service';
+import { NextTurnHelper } from './helpers/next-turn.helper';
 
 export const gameStateControllerFactory: FactoryProvider = {
   provide: GAME_STATE_CONTROLLER_FACTORY_TOKEN,
@@ -54,6 +58,9 @@ export class GameStateController {
 
       case GameEventTypes.SelectLeader:
         return [await this.setLeader(event.payload as ISelectLeaderPayload)];
+
+      case GameEventTypes.NextTurn:
+        return [await this.nextTurn(event.payload as IBaseGameEventPayload)];
 
       default:
         break;
@@ -112,6 +119,15 @@ export class GameStateController {
     return gameState.toObject();
   }
 
+  async nextTurn(payload: IBaseGameEventPayload) {
+    const { gameState } = await this.prepare(payload);
+
+    const updatedState = NextTurnHelper.calculate(gameState);
+
+    gameState.markModified('turn');
+    await gameState.save();
+    return updatedState.toObject();
+  }
   async getState() {
     const gameState = await this.getModel();
     return gameState.toObject();

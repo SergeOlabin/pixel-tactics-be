@@ -34,9 +34,7 @@ export class PlayersAddon {
   private createPlayerState(userId: string, first: boolean): IPlayerState {
     return {
       actionsMeta: this.getInitActionsForPlayer(),
-      // turnState: this.getInitTurnStateForPlayer(first),
       userId,
-      first,
     };
   }
 

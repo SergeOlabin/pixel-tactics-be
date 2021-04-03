@@ -54,7 +54,6 @@ export class ITurnState {
 export class IPlayerState {
   userId: string;
   actionsMeta: IActionsState;
-  first: boolean;
 }
 
 export class IPlayersStateClass {

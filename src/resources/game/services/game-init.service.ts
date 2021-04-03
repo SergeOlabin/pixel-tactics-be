@@ -12,7 +12,7 @@ import { BoardStateAddon } from '../addons/board-state.addon';
 import { PlayersAddon } from '../addons/players-state.addon';
 import { TurnStateAddon } from '../addons/turn-state.addon';
 import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
-import { GameStateControllerFactoryType } from '../factories/game-state-controller.factory';
+import { GameStateControllerFactoryType } from '../factories/game-state-controller/game-state-controller.factory';
 import {
   GamesOnlineRegistry,
   IGameOnlineCfg,

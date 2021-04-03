@@ -91,7 +91,7 @@ export class IPlayerLeader {
 }
 
 export class IBoardCard {
-  cardType: string;
+  cardType: CharacterList;
   stats: IBoardCardStats;
   effects: IBoardCardEffect[];
 }
@@ -103,4 +103,19 @@ export class IBoardCardStats {
 
 export class IBoardCardEffect {}
 
-export class IPlayerUnit {}
+export class IPlayerUnit {
+  [Waves.Vanguard]: {
+    [Positions.Left]: IBoardCard | null;
+    [Positions.Center]: IBoardCard | null;
+    [Positions.Right]: IBoardCard | null;
+  };
+  [Waves.Flank]: {
+    [Positions.Left]: IBoardCard | null;
+    [Positions.Right]: IBoardCard | null;
+  };
+  [Waves.Rear]: {
+    [Positions.Left]: IBoardCard | null;
+    [Positions.Center]: IBoardCard | null;
+    [Positions.Right]: IBoardCard | null;
+  };
+}

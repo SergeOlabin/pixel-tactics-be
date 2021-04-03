@@ -1,5 +1,11 @@
 import { CharacterList } from '../../../game-data/types/character-list';
-import { IBoardStateClass, Players } from '../../../game-data/types/game-types';
+import {
+  IBoardStateClass,
+  IPlayerUnit,
+  Players,
+  Positions,
+  Waves,
+} from '../../../game-data/types/game-types';
 import { shuffle } from '../../../shared/helpers/shuffle';
 
 const CARDS_AMOUNT = 25;
@@ -11,7 +17,7 @@ export class BoardStateAddon {
         hand: {
           cards: [],
         },
-        unit: {},
+        unit: emptyUnit,
         deck: {
           cards: shuffle(Object.values(CharacterList)),
           cardsLeft: CARDS_AMOUNT,
@@ -21,7 +27,7 @@ export class BoardStateAddon {
         hand: {
           cards: [],
         },
-        unit: {},
+        unit: emptyUnit,
         deck: {
           cards: shuffle(Object.values(CharacterList)),
           cardsLeft: CARDS_AMOUNT,
@@ -30,3 +36,20 @@ export class BoardStateAddon {
     };
   }
 }
+
+const emptyUnit: IPlayerUnit = {
+  [Waves.Vanguard]: {
+    [Positions.Left]: null,
+    [Positions.Center]: null,
+    [Positions.Right]: null,
+  },
+  [Waves.Flank]: {
+    [Positions.Left]: null,
+    [Positions.Right]: null,
+  },
+  [Waves.Rear]: {
+    [Positions.Left]: null,
+    [Positions.Center]: null,
+    [Positions.Right]: null,
+  },
+};

@@ -2,7 +2,6 @@ import {
   IActionsState,
   IPlayersStateClass,
   IPlayerState,
-  ITurnState,
   Players,
   TurnStage,
   Waves,
@@ -35,7 +34,7 @@ export class PlayersAddon {
   private createPlayerState(userId: string, first: boolean): IPlayerState {
     return {
       actionsMeta: this.getInitActionsForPlayer(),
-      turnState: this.getInitTurnStateForPlayer(first),
+      // turnState: this.getInitTurnStateForPlayer(first),
       userId,
       first,
     };
@@ -45,13 +44,6 @@ export class PlayersAddon {
     return {
       available: 2,
       max: 2,
-    };
-  }
-
-  private getInitTurnStateForPlayer(first: boolean): ITurnState {
-    return {
-      wave: Waves.Vanguard,
-      state: first ? TurnStage.InProgress : TurnStage.Waiting,
     };
   }
 

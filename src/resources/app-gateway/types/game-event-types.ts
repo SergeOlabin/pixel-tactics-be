@@ -4,6 +4,7 @@ import { CharacterList } from '../../../game-data/types/character-list';
 export enum GameEventTypes {
   DrawCard = 'drawCard',
   DrawCardsForLeader = 'drawCardsForLeader',
+  NextTurn = 'nextTurn',
   Move = 'move',
   PlayCard = 'playCard',
   SelectLeader = 'selectLeader',

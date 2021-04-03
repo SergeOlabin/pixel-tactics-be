@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { IPlayerState } from '../../../game-data/types/game-types';
 import { BoardStateAddon } from '../addons/board-state.addon';
 import { PlayersAddon } from '../addons/players-state.addon';
+import { TurnStateAddon } from '../addons/turn-state.addon';
 import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
 import { GameStateControllerFactoryType } from '../factories/game-state-controller.factory';
 import {
@@ -22,6 +23,7 @@ import { GameState, GameStateDocumentType } from '../schemas/game-state.schema';
 export class GameInitService implements OnModuleInit, OnModuleDestroy {
   private playersAddon = new PlayersAddon();
   private boardStateAddon = new BoardStateAddon();
+  private turnStateAddon = new TurnStateAddon();
 
   constructor(
     @InjectModel(GameState.name)
@@ -43,7 +45,10 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
     const _id = id || uuidv4();
 
     const board = this.boardStateAddon.createInitBoardState();
-    const [players, turn] = this.playersAddon.createPlayersState(playerIds);
+    const [players, firstPlayer] = this.playersAddon.createPlayersState(
+      playerIds,
+    );
+    const turn = this.turnStateAddon.createTurnState(firstPlayer);
 
     const gameState = new GameState({
       _id,

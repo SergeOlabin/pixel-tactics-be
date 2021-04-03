@@ -3,6 +3,7 @@ import {
   IBoardStateClass,
   IGameState,
   IPlayersStateClass,
+  ITurnState,
   Players,
 } from '../../../game-data/types/game-types';
 import { Document } from 'mongoose';
@@ -21,7 +22,7 @@ export class GameState implements IGameState {
   players: IPlayersStateClass;
 
   @Prop()
-  turn: Players;
+  turn: ITurnState;
 
   constructor({
     _id,
@@ -32,7 +33,7 @@ export class GameState implements IGameState {
     _id: string;
     board: IBoardStateClass;
     players: IPlayersStateClass;
-    turn: Players;
+    turn: ITurnState;
   }) {
     this._id = _id;
     this.board = board;

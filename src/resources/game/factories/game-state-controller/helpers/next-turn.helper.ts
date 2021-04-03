@@ -5,19 +5,28 @@ export class NextTurnHelper {
   static calculate(gameState: GameStateDocumentType): GameStateDocumentType {
     const { currentPlayer, firstPlayer, wave } = gameState.turn;
 
+    gameState.players[currentPlayer].actionsMeta.available =
+      gameState.players[currentPlayer].actionsMeta.max;
+
     if (currentPlayer === firstPlayer) {
-      gameState.turn.currentPlayer ===
-        NextTurnHelper.getOpponent(currentPlayer);
+      gameState.turn.currentPlayer = NextTurnHelper.getOpponent(currentPlayer);
 
       return gameState;
     }
 
     const nextWave = NextTurnHelper.getNextWave(wave);
-    if (nextWave !== Waves.Vanguard) {
-      gameState.turn.currentPlayer ===
-        NextTurnHelper.getOpponent(currentPlayer);
+
+    if (currentPlayer !== firstPlayer) {
+      gameState.turn.wave = nextWave;
+
+      if (nextWave !== Waves.Vanguard) {
+        gameState.turn.currentPlayer = NextTurnHelper.getOpponent(
+          currentPlayer,
+        );
+      } else {
+        gameState.turn.firstPlayer = currentPlayer;
+      }
     }
-    gameState.turn.wave = nextWave;
 
     return gameState;
   }

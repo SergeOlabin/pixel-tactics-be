@@ -1,4 +1,5 @@
 import { FactoryProvider, OnModuleInit } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
 import { LeanDocument, Model, Query } from 'mongoose';
 import {
   IGameState,
@@ -68,7 +69,16 @@ export class GameStateController {
   }
 
   async drawCard(payload: IDrawCardPayload, cardsAmount = 1) {
-    const { gameState, playerColor, playerBoard } = await this.prepare(payload);
+    const {
+      gameState,
+      playerColor,
+      playerBoard,
+      playerMeta,
+    } = await this.prepare(payload);
+
+    if (gameState.players[playerColor].actionsMeta.available <= 0) {
+      throw new WsException('Not enough action points');
+    }
 
     const cards = playerBoard.deck.cards.splice(0, cardsAmount || 1);
     playerBoard.hand.cards.push(...cards);
@@ -125,12 +135,14 @@ export class GameStateController {
     const updatedState = NextTurnHelper.calculate(gameState);
 
     gameState.markModified('turn');
+    gameState.markModified('players');
+
     await gameState.save();
     return updatedState.toObject();
   }
   async getState() {
     const gameState = await this.getModel();
-    return gameState.toObject();
+    return gameState?.toObject();
   }
 
   private getPlayerColor(gameState: GameState, userId: string): Players {
@@ -149,11 +161,13 @@ export class GameStateController {
     const gameState = await this.getModel();
     const playerColor = this.getPlayerColor(gameState, userId);
     const playerBoard = gameState.board[playerColor];
+    const playerMeta = gameState.players[playerColor];
 
     return {
       gameState,
       playerColor,
       playerBoard,
+      playerMeta,
     };
   }
 }

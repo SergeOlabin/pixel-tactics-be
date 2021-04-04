@@ -12,6 +12,9 @@ import { GameStateToUserAdapterModule } from '../../shared/services/game-state-t
 import { GameEffectsService } from './services/game-effects.service';
 import { CharactersRegistry } from './registries/static/characters.registry';
 import { GameInjectableProxyService } from './services/game-injectable-proxy.service';
+import * as Characters from '../../game-data/characters/v1';
+import { CharacterList } from '../../game-data/types/character-list';
+import { AlchemistHero, BerserkerHero } from '../../game-data/characters/v1';
 
 @Module({
   imports: [
@@ -37,4 +40,8 @@ import { GameInjectableProxyService } from './services/game-injectable-proxy.ser
   ],
   exports: [GameGateway, GamesOnlineRegistry],
 })
-export class GameModule {}
+export class GameModule {
+  constructor(charactersRegistry: CharactersRegistry) {
+    charactersRegistry.addItems([...Object.values(Characters)]);
+  }
+}

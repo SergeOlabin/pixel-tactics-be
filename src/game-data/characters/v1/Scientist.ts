@@ -2,9 +2,9 @@ import { GameStateDocumentType } from '../../../resources/game/schemas/game-stat
 import { CharacterList, IHero } from '../../types/character-list';
 
 export const ScientistHero: IHero = class {
-  static type: CharacterList.Scientist;
-  static attack: 2;
-  static health: 7;
+  static type = CharacterList.Scientist;
+  static attack = 2;
+  static health = 7;
 
   static vanguardPower(gameState: GameStateDocumentType) {
     console.log('method not yet implemented');

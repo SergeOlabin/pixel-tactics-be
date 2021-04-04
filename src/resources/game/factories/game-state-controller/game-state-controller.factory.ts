@@ -18,6 +18,7 @@ import {
 } from '../../schemas/game-state.schema';
 import { GameStateModelService } from '../../services/game-state-model.service';
 import { NextTurnHelper } from './helpers/next-turn.helper';
+import { PlayCardHelper } from './helpers/play-card.helper';
 
 export const gameStateControllerFactory: FactoryProvider = {
   provide: GAME_STATE_CONTROLLER_FACTORY_TOKEN,
@@ -138,33 +139,16 @@ export class GameStateController {
   }
 
   async playCard(payload: IPlayCardPayload) {
-    const { toPlace, cardType } = payload;
-    const { gameState, playerBoard, playerMeta } = await this.prepare(payload);
+    const updatedState = await PlayCardHelper.play(
+      await this.prepare({ userId: payload.userId }),
+      payload,
+    );
 
-    if (playerMeta.actionsMeta.available <= 0) {
-      throw new WsException('Not enough action points.');
-    }
+    updatedState.markModified('board');
+    updatedState.markModified('players');
 
-    const position = playerBoard.unit[toPlace.wave][toPlace.position];
-
-    if (position) {
-      if (playerMeta.actionsMeta.available <= 0) {
-        throw new WsException('Field is taken byu another hero.');
-      }
-    }
-
-    const { cards } = playerBoard.hand;
-    const cardInHandIdx = cards.findIndex((card) => card === cardType);
-    if (cardInHandIdx < 0) {
-      throw new WsException('Card not found in the players hand.');
-    }
-
-    cards.splice(cardInHandIdx, 1);
-    // TODO: create new Class here
-    // const boardCardModel = {
-
-    // };
-    // playerBoard.unit[toPlace.wave][toPlace.position] =
+    await updatedState.save();
+    return updatedState.toObject();
   }
 
   async getState() {

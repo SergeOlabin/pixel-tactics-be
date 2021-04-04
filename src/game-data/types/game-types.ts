@@ -103,7 +103,7 @@ export class IPlayerLeader {
 export class IBoardCard {
   cardType: CharacterList;
   stats: IBoardCardStats;
-  effects: IBoardCardEffect[];
+  effects?: IBoardCardEffect[];
 }
 
 export class IBoardCardStats {

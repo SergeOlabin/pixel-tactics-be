@@ -7,11 +7,9 @@ import {
 } from '../../../../../game-data/types/game-types';
 import { IPlayCardPayload } from '../../../../app-gateway/types/game-event-types';
 import { GameStateDocumentType } from '../../../schemas/game-state.schema';
-import { GameInjectableProxyService } from '../../../services/game-injectable-proxy.service';
+import { GameInjectableProxyService as proxy } from '../../../services/game-injectable-proxy.service';
 
 export class PlayCardHelper {
-  static charactersRegistry = GameInjectableProxyService.charactersRegistry;
-
   static async play(
     {
       playerBoard,
@@ -46,7 +44,7 @@ export class PlayCardHelper {
     }
 
     cards.splice(cardInHandIdx, 1);
-    const hero = PlayCardHelper.charactersRegistry.getItem(cardType);
+    const hero = proxy.charactersRegistry.getItem(cardType);
 
     if (!hero) {
       throw new WsException(

@@ -60,6 +60,9 @@ export class GameStateController {
       case GameEventTypes.NextTurn:
         return [await this.nextTurn(event.payload as IBaseGameEventPayload)];
 
+      case GameEventTypes.PlayCard:
+        return [await this.playCard(event.payload as IPlayCardPayload)];
+
       default:
         break;
     }

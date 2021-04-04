@@ -5,10 +5,10 @@ import { GameGateway } from '../game/game.gateway';
 
 @Injectable()
 export class AppGatewayAddonsService {
-  constructor(public chat: ChatGateway, public gameInit: GameGateway) {}
+  constructor(public chat: ChatGateway, public game: GameGateway) {}
 
   setServerToAddons(sever: Socket) {
     this.chat.setServer(sever);
-    this.gameInit.setServer(sever);
+    this.game.setServer(sever);
   }
 }

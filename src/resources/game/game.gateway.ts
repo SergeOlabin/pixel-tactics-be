@@ -136,12 +136,14 @@ export class GameGateway extends BaseGatewayAddon {
       userId,
     );
 
-    const clientId = this.usersOnlineRegistry.getItem(userId).clientId;
+    const clientId = this.usersOnlineRegistry.getItem(userId)?.clientId;
+
+    if (!clientId) {
+      this.logger.log(`Skipping emitting state for gameId ${gameState?._id}`);
+    }
 
     this.logger.log(`
-      EMITTING GAME STATE,
-      ${clientId},
-      `);
+      EMITTING GAME STATE ${clientId}`);
 
     this.server
       .to(clientId)

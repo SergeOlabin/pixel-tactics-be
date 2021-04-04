@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AppGatewayAddonsService } from './resources/app-gateway/app-gateway-addons';
+import { AppGateway } from './resources/app-gateway/app.gateway';
+import { AuthModule } from './resources/auth/auth.module';
 import { CatsModule } from './resources/cats/cats.module';
+import { ChatModule } from './resources/chat/chat.module';
 import { GameModule } from './resources/game/game.module';
 import { UsersModule } from './resources/users/users.module';
-import { AuthModule } from './resources/auth/auth.module';
-import { ChatModule } from './resources/chat/chat.module';
-import { AppGateway } from './resources/app-gateway/app.gateway';
-import { AppGatewayAddonsService } from './resources/app-gateway/app-gateway-addons';
 import { UsersOnlineModule } from './shared/services/users-online.module';
 
 // TODO: USE ENV VARS

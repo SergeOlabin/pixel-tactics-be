@@ -12,7 +12,6 @@ import {
   WsResponse,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { IGameState } from '../../game-data/types/game-types';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
 import { GamesOnlineRegistry } from '../game/registries/games-online.registry';
 import { AppGatewayAddonsService } from './app-gateway-addons';
@@ -22,7 +21,6 @@ import {
   IMessagePayload,
   IOpenChatPayload,
 } from './types/chat-socket-events';
-import { GameEventTypesToClient } from './types/game-event-types';
 import {
   GameEvent,
   GameInitEventsToServer,
@@ -30,7 +28,6 @@ import {
   IChallengeGamePayload,
   ICheckForExistingGamePayload,
   IDeclineGamePayload,
-  IGameEvent,
 } from './types/game-socket-events';
 
 @WebSocketGateway({ transports: ['websocket'] })
@@ -93,17 +90,17 @@ export class AppGateway
     @MessageBody() challengeGamePayload: IChallengeGamePayload,
     // @ConnectedSocket() client: Socket,
   ): WsResponse {
-    return this.addons.gameInit.challengeGame(challengeGamePayload);
+    return this.addons.game.challengeGame(challengeGamePayload);
   }
 
   @SubscribeMessage(GameInitEventsToServer.AcceptGame)
   acceptGame(@MessageBody() acceptGamePayload: IAcceptGamePayload) {
-    this.addons.gameInit.acceptGame(acceptGamePayload);
+    this.addons.game.acceptGame(acceptGamePayload);
   }
 
   @SubscribeMessage(GameInitEventsToServer.DeclineGame)
   declineGame(@MessageBody() declineGamePayload: IDeclineGamePayload) {
-    this.addons.gameInit.declineGame(declineGamePayload);
+    this.addons.game.declineGame(declineGamePayload);
   }
 
   @SubscribeMessage(GameInitEventsToServer.CheckForExistingGame)
@@ -122,7 +119,7 @@ export class AppGateway
 
     const gameState = await game.controller.getState();
 
-    this.addons.gameInit.sendGameStateToPlayer(gameState, userId);
+    this.addons.game.sendGameStateToPlayer(gameState, userId);
   }
 
   @SubscribeMessage(GameEvent.ToServer)
@@ -141,18 +138,12 @@ export class AppGateway
     } catch (error) {
       throw new WsException(error);
     }
-    this.addons.gameInit.sendUpdatedGameState(event.gameId, updatedState);
+    this.addons.game.sendUpdatedGameState(event.gameId, updatedState);
 
     if (responseEvent) {
       client.join('temp');
       this.server.to('temp').emit(responseEvent);
       client.leave('temp');
     }
-    // await this.drawCardEvent({
-    //   ...payload,
-    //   cardsAmount: 4,
-    // });
-    // const { id } = client.handshake.auth;
-    // this.server.to(id).emit(SelectLeaderEvent.ToClient);
   }
 }

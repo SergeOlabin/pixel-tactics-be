@@ -9,6 +9,9 @@ import { GameStateModelService } from './services/game-state-model.service';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { UsersOnlineModule } from '../../shared/services/users-online.module';
 import { GameStateToUserAdapterModule } from '../../shared/services/game-state-to-user-adapter/game-state-to-user.adapter.module';
+import { GameEffectsService } from './services/game-effects.service';
+import { CharactersRegistry } from './registries/static/characters.registry';
+import { GameInjectableProxyService } from './services/game-injectable-proxy.service';
 
 @Module({
   imports: [
@@ -26,8 +29,11 @@ import { GameStateToUserAdapterModule } from '../../shared/services/game-state-t
     GameInitService,
     GamesOnlineRegistry,
     PendingGamesRegistry,
+    CharactersRegistry,
     GameStateModelService,
     gameStateControllerFactory,
+    GameEffectsService,
+    GameInjectableProxyService,
   ],
   exports: [GameGateway, GamesOnlineRegistry],
 })

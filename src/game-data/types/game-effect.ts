@@ -1,4 +1,4 @@
-import { CharacterList } from '../../../game-data/types/character-list';
+import { CharacterList } from './character-list';
 
 export enum EffectTypes {}
 

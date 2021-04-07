@@ -3,7 +3,12 @@ import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { WsException } from '@nestjs/websockets';
 import { Model } from 'mongoose';
-import { IGameState, Players } from '../../game-data/types/game-types';
+import {
+  IGameState,
+  IPlayerBoard,
+  IPlayerState,
+  Players,
+} from '../../game-data/types/game-types';
 import {
   GameEventTypesToClient,
   GameEventTypes,
@@ -11,6 +16,7 @@ import {
   IBaseGameEventPayload,
   ISelectLeaderPayload,
   IPlayCardPayload,
+  IMoveCardPayload,
 } from '../app-gateway/types/game-event-types';
 import { IGameEvent } from '../app-gateway/types/game-socket-events';
 import {
@@ -20,6 +26,8 @@ import {
 import { NextTurnService } from './helper-services/next-turn.service';
 import { PlayCardService } from './helper-services/play-card.service';
 import { v4 as uuid } from 'uuid';
+import { WsExceptionType } from '../../shared/types/socket-exception.types';
+import { MoveCharacterService } from './helper-services/move-character.service';
 
 @Injectable({
   scope: Scope.TRANSIENT,
@@ -34,6 +42,7 @@ export class GameStateService {
     public gameStateModel: Model<GameStateDocumentType>,
     private readonly nextTurnService: NextTurnService,
     private readonly playCardService: PlayCardService,
+    private readonly moveCharacterService: MoveCharacterService,
   ) {
     this.gameId = request.gameId as string;
   }
@@ -60,6 +69,9 @@ export class GameStateService {
       case GameEventTypes.PlayCard:
         return [await this.playCard(event.payload as IPlayCardPayload)];
 
+      case GameEventTypes.Move:
+        return [await this.move(event.payload as IMoveCardPayload)];
+
       default:
         break;
     }
@@ -74,7 +86,10 @@ export class GameStateService {
     } = await this.prepare(payload);
 
     if (playerMeta.actionsMeta.available <= 0) {
-      throw new WsException('Not enough action points');
+      throw new WsException({
+        type: WsExceptionType.Error,
+        message: 'Not enough action points.',
+      });
     }
 
     const cards = playerBoard.deck.cards.splice(0, cardsAmount || 1);
@@ -151,6 +166,19 @@ export class GameStateService {
     return updatedState.toObject();
   }
 
+  async move(payload: IMoveCardPayload) {
+    const updatedState = await this.moveCharacterService.move(
+      await this.prepare({ userId: payload.userId }),
+      payload,
+    );
+
+    updatedState.markModified('board');
+    updatedState.markModified('players');
+
+    await updatedState.save();
+    return updatedState.toObject();
+  }
+
   async getState() {
     const gameState = await this.getModel();
     return gameState?.toObject();
@@ -167,7 +195,7 @@ export class GameStateService {
     return await this.gameStateModel.findById(this.gameId).exec();
   }
 
-  private async prepare(payload: IBaseGameEventPayload) {
+  private async prepare(payload: IBaseGameEventPayload): Promise<IPrepare> {
     const { userId } = payload;
 
     const gameState = await this.getModel();
@@ -182,4 +210,11 @@ export class GameStateService {
       playerMeta,
     };
   }
+}
+
+export interface IPrepare {
+  gameState: GameStateDocumentType;
+  playerColor: Players;
+  playerBoard: IPlayerBoard;
+  playerMeta: IPlayerState;
 }

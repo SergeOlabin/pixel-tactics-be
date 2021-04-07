@@ -30,6 +30,11 @@ export interface IPlayCardPayload extends IBaseGameEventPayload {
   cardType: CharacterList;
 }
 
+export interface IMoveCardPayload extends IBaseGameEventPayload {
+  fromPlace: IPlace;
+  toPlace: IPlace;
+}
+
 export enum GameEventTypesToClient {
   SelectLeaderReq = 'ToClient/selectLeaderReq',
 }

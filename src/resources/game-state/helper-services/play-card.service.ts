@@ -1,15 +1,13 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { WsException } from '@nestjs/websockets';
-import {
-  IBoardCard,
-  IPlayerBoard,
-  IPlayerState,
-  Players,
-} from '../../../game-data/types/game-types';
-import { IPlayCardPayload } from '../../app-gateway/types/game-event-types';
+import { IBoardCard } from '../../../game-data/types/game-types';
 import { CharactersRegistry } from '../../../shared/registries/static/characters-registry/characters-registry.service';
+import { IPlayCardPayload } from '../../app-gateway/types/game-event-types';
 import { GameStateDocumentType } from '../../game/schemas/game-state.schema';
+import { IPrepare } from '../game-state.service';
+import { checkAvailableActionPoints } from '../helpers/check-available-action-points';
+import { checkWaveValidity } from '../helpers/check-wave-validity';
 
 @Injectable({
   scope: Scope.REQUEST,
@@ -23,30 +21,18 @@ export class PlayCardService {
   }
 
   async play(
-    {
-      playerBoard,
-      gameState,
-      playerMeta,
-    }: {
-      gameState: GameStateDocumentType;
-      playerColor: Players;
-      playerBoard: IPlayerBoard;
-      playerMeta: IPlayerState;
-    },
+    data: IPrepare,
     payload: IPlayCardPayload,
   ): Promise<GameStateDocumentType> {
     const { toPlace, cardType } = payload;
+    const { playerBoard, gameState, playerMeta, playerColor } = data;
 
-    if (playerMeta.actionsMeta.available <= 0) {
-      throw new WsException('Not enough action points.');
-    }
+    checkAvailableActionPoints(playerMeta);
+    checkWaveValidity(data, payload.toPlace.wave);
 
     const position = playerBoard.unit[toPlace.wave][toPlace.position];
-
     if (position) {
-      if (playerMeta.actionsMeta.available <= 0) {
-        throw new WsException('Field is taken by another hero.');
-      }
+      throw new WsException('Field is taken by another hero.');
     }
 
     const { cards } = playerBoard.hand;
@@ -74,6 +60,7 @@ export class PlayCardService {
     };
 
     playerBoard.unit[toPlace.wave][toPlace.position] = card;
+    playerMeta.actionsMeta.available -= 1;
 
     return gameState;
   }

@@ -1,4 +1,5 @@
 import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import {
   ConnectedSocket,
   MessageBody,
@@ -13,6 +14,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { UsersOnlineRegistry } from '../../shared/services/users-online.registry';
+import { GameStateService } from '../game-state/game-state.service';
 import { GamesOnlineRegistry } from '../game/registries/games-online.registry';
 import { AppGatewayAddonsService } from './app-gateway-addons';
 import { GameEventDto } from './dto/game-event.dto';
@@ -41,6 +43,7 @@ export class AppGateway
     private readonly usersOnlineRegistry: UsersOnlineRegistry,
     private readonly gamesOnlineRegistry: GamesOnlineRegistry,
     private readonly addons: AppGatewayAddonsService,
+    private readonly moduleRef: ModuleRef,
   ) {}
 
   handleConnection(client: Socket) {
@@ -117,7 +120,10 @@ export class AppGateway
       return;
     }
 
-    const gameState = await game.controller.getState();
+    const gameStateService = await this.addons.game.getGameStateService({
+      contextId: game.contextId,
+    });
+    const gameState = await gameStateService.getState();
 
     this.addons.game.sendGameStateToPlayer(gameState, userId);
   }
@@ -130,15 +136,20 @@ export class AppGateway
   ) {
     this.logger.log(`Received: ${event.type}`);
 
-    const controller = this.gamesOnlineRegistry.getItem(event.gameId)
-      .controller;
+    const gameStateService = await this.addons.game.getGameStateService({
+      gameId: event.gameId,
+    });
+
     let updatedState, responseEvent;
     try {
-      [updatedState, responseEvent] = await controller.handleEvent(event);
+      [updatedState, responseEvent] = await gameStateService.handleEvent(event);
     } catch (error) {
       throw new WsException(error);
     }
-    this.addons.game.sendUpdatedGameState(event.gameId, updatedState);
+    this.addons.game.sendUpdatedGameStateToAllPlayers(
+      event.gameId,
+      updatedState,
+    );
 
     if (responseEvent) {
       client.join('temp');

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ContextIdFactory, ModuleRef } from '@nestjs/core';
+import { ContextId, ContextIdFactory, ModuleRef } from '@nestjs/core';
 import { WsException, WsResponse } from '@nestjs/websockets';
 import { v4 as uuidv4 } from 'uuid';
 import { GameStateToUserAdapterService } from '../../shared/services/game-state-to-user-adapter/game-state-to-user-adapter.service';
@@ -97,10 +97,6 @@ export class GameGateway extends BaseGatewayAddon {
 
     const gameIdReq = await this.startGame(game.playerIds, game.id);
     this.pendingGamesRegistry.removeItems([gameId]);
-
-    this.gamesOnlineRegistry.addItems([
-      this.gameInitService.createGameControllerCfg(gameIdReq, game.playerIds),
-    ]);
   }
 
   declineGame(payload: IDeclineGamePayload) {
@@ -126,7 +122,7 @@ export class GameGateway extends BaseGatewayAddon {
       });
   }
 
-  sendUpdatedGameState(gameId: string, gameState: GameState) {
+  sendUpdatedGameStateToAllPlayers(gameId: string, gameState: GameState) {
     const game = this.gamesOnlineRegistry.getItem(gameId);
     const userIds = game.userIds;
 
@@ -169,6 +165,24 @@ export class GameGateway extends BaseGatewayAddon {
     //   contextId,
     //   { strict: false },
     // );
+  }
+
+  async getGameStateService(req: { contextId?: ContextId; gameId?: string }) {
+    const { contextId, gameId } = req;
+
+    if (!contextId || !gameId) {
+      throw new WsException(
+        `please provider at least one of: ['contextId' or 'gameId']`,
+      );
+    }
+
+    if (contextId) {
+      return await this.moduleRef.resolve(GameStateService, contextId);
+    }
+
+    const gameCfg = this.gamesOnlineRegistry.getItem(gameId);
+
+    return await this.moduleRef.resolve(GameStateService, gameCfg.contextId);
   }
 
   private async startGame(userIds: string[], id?: string) {

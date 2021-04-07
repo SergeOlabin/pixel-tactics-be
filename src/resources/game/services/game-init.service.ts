@@ -60,9 +60,24 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
       turn,
     });
 
+    // set to db
     await this.gameStateModel.create(gameState);
 
     // add to registry
+    const gameCfg = await this.createGameStateCfg(_id, playerIds);
+    this.gamesRegistry.addItems([gameCfg]);
+
+    return [gameState, _id];
+  }
+
+  finishGame(gameId: string) {
+    this.gameStateModel.deleteOne({ _id: gameId });
+  }
+
+  async createGameStateCfg(
+    _id: string,
+    userIds: string[],
+  ): Promise<IGameOnlineCfg> {
     const contextId = ContextIdFactory.create();
     this.moduleRef.registerRequestByContextId(
       {
@@ -74,36 +89,29 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
 
     console.log('contextId', contextId);
 
-    const gameStateService = this.moduleRef.resolve(
+    const gameStateService = await this.moduleRef.resolve(
       GameStateService,
       contextId,
       { strict: false },
     );
 
-    this.gamesRegistry.addItems([this.createGameControllerCfg(_id, playerIds)]);
-
-    return [gameState, _id];
-  }
-
-  finishGame(gameId: string) {
-    this.gameStateModel.deleteOne({ _id: gameId });
-  }
-
-  createGameControllerCfg(_id: string, userIds: string[]): IGameOnlineCfg {
     return {
       _id,
       userIds,
-      controller: this.gameStateControllerFactory.create(_id),
+      contextId,
     };
   }
 
   private async addGameStatesFromDbToRegistry() {
-    const cfgMaps = (await this.gameStateModel.find().exec()).map((v) => {
-      const playersState = Object.values(v.players) as IPlayerState[];
-      const userIds = playersState.map((state) => state.userId);
+    const allEntries = await this.gameStateModel.find().exec();
+    const cfgMaps = await Promise.all(
+      allEntries.map(async (v) => {
+        const playersState = Object.values(v.players) as IPlayerState[];
+        const userIds = playersState.map((state) => state.userId);
 
-      return this.createGameControllerCfg(v._id, userIds);
-    });
+        return await this.createGameStateCfg(v._id, userIds);
+      }),
+    );
 
     this.gamesRegistry.addItems(cfgMaps);
     console.log('ALL GAMES', JSON.stringify(this.gamesRegistry.getItems()));

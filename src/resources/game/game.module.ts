@@ -39,7 +39,7 @@ import { GameStateModelService } from './services/game-state-model.service';
     GameEffectsService,
     GameInjectableProxyService,
   ],
-  exports: [GameGateway, GamesOnlineRegistry],
+  exports: [GameGateway, GamesOnlineRegistry, GameStateModule],
 })
 export class GameModule {
   constructor(charactersRegistry: CharactersRegistry) {

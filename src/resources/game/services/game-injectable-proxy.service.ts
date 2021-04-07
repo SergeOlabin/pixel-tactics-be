@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CharactersRegistry } from '../registries/static/characters.registry';
+import { CharactersRegistry } from '../../../shared/registries/static/characters-registry/characters-registry.service';
 
 /**
  * A service that can inject dependencies and set them as a static properties.

@@ -7,11 +7,13 @@ import { gameStateControllerFactory } from './factories/game-state-controller/ga
 import { GameGateway } from './game.gateway';
 import { GamesOnlineRegistry } from './registries/games-online.registry';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
-import { CharactersRegistry } from './registries/static/characters.registry';
+import { CharactersRegistry } from '../../shared/registries/static/characters-registry/characters-registry.service';
 import { GameState, GameStateSchema } from './schemas/game-state.schema';
 import { GameEffectsService } from './services/game-effects.service';
 import { GameInitService } from './services/game-init.service';
 import { GameInjectableProxyService } from './services/game-injectable-proxy.service';
+import { CharactersRegistryModule } from '../../shared/registries/static/characters-registry/characters-registry.module';
+import { GameStateModule } from '../game-state/game-state.module';
 import { GameStateModelService } from './services/game-state-model.service';
 
 @Module({
@@ -24,15 +26,16 @@ import { GameStateModelService } from './services/game-state-model.service';
     ]),
     UsersOnlineModule,
     GameStateToUserAdapterModule,
+    CharactersRegistryModule,
+    GameStateModule,
   ],
   providers: [
     GameGateway,
     GameInitService,
     GamesOnlineRegistry,
     PendingGamesRegistry,
-    CharactersRegistry,
-    GameStateModelService,
     gameStateControllerFactory,
+    GameStateModelService,
     GameEffectsService,
     GameInjectableProxyService,
   ],

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ContextIdFactory, ModuleRef } from '@nestjs/core';
 import { WsException, WsResponse } from '@nestjs/websockets';
 import { v4 as uuidv4 } from 'uuid';
 import { GameStateToUserAdapterService } from '../../shared/services/game-state-to-user-adapter/game-state-to-user-adapter.service';
@@ -11,6 +12,7 @@ import {
   IChallengeGamePayload,
   IDeclineGamePayload,
 } from '../app-gateway/types/game-socket-events';
+import { GameStateService } from '../game-state/game-state.service';
 import { GamesOnlineRegistry } from './registries/games-online.registry';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
 import { GameState } from './schemas/game-state.schema';
@@ -26,6 +28,7 @@ export class GameGateway extends BaseGatewayAddon {
     private readonly pendingGamesRegistry: PendingGamesRegistry,
     private readonly gamesOnlineRegistry: GamesOnlineRegistry,
     private readonly gameStateToUserAdapterService: GameStateToUserAdapterService,
+    private readonly moduleRef: ModuleRef,
   ) {
     super();
   }
@@ -148,6 +151,24 @@ export class GameGateway extends BaseGatewayAddon {
     this.server
       .to(clientId)
       .emit(GameInitEventsToClient.SendGameState, adaptedState);
+
+    // // add to registry
+    // const contextId = ContextIdFactory.create();
+    // this.moduleRef.registerRequestByContextId(
+    //   {
+    //     contextId,
+    //     gameId: gameState._id,
+    //   },
+    //   contextId,
+    // );
+
+    // console.log('contextId', contextId);
+
+    // const gameStateService = this.moduleRef.resolve(
+    //   GameStateService,
+    //   contextId,
+    //   { strict: false },
+    // );
   }
 
   private async startGame(userIds: string[], id?: string) {

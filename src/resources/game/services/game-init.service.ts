@@ -4,10 +4,12 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
+import { ContextIdFactory, ModuleRef } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { IPlayerState } from '../../../game-data/types/game-types';
+import { GameStateService } from '../../game-state/game-state.service';
 import { BoardStateAddon } from '../addons/board-state.addon';
 import { PlayersAddon } from '../addons/players-state.addon';
 import { TurnStateAddon } from '../addons/turn-state.addon';
@@ -31,6 +33,7 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
     @Inject(GAME_STATE_CONTROLLER_FACTORY_TOKEN)
     private gameStateControllerFactory: GameStateControllerFactoryType,
     private readonly gamesRegistry: GamesOnlineRegistry,
+    private readonly moduleRef: ModuleRef,
   ) {}
 
   async onModuleInit() {
@@ -60,6 +63,23 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
     await this.gameStateModel.create(gameState);
 
     // add to registry
+    const contextId = ContextIdFactory.create();
+    this.moduleRef.registerRequestByContextId(
+      {
+        contextId,
+        gameId: _id,
+      },
+      contextId,
+    );
+
+    console.log('contextId', contextId);
+
+    const gameStateService = this.moduleRef.resolve(
+      GameStateService,
+      contextId,
+      { strict: false },
+    );
+
     this.gamesRegistry.addItems([this.createGameControllerCfg(_id, playerIds)]);
 
     return [gameState, _id];

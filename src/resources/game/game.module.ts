@@ -3,7 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import * as Characters from '../../game-data/characters/v1';
 import { GameStateToUserAdapterModule } from '../../shared/services/game-state-to-user-adapter/game-state-to-user.adapter.module';
 import { UsersOnlineModule } from '../../shared/services/users-online.module';
-import { gameStateControllerFactory } from './factories/game-state-controller/game-state-controller.factory';
 import { GameGateway } from './game.gateway';
 import { GamesOnlineRegistry } from './registries/games-online.registry';
 import { PendingGamesRegistry } from './registries/pending-games.registry';
@@ -34,7 +33,6 @@ import { GameStateModelService } from './services/game-state-model.service';
     GameInitService,
     GamesOnlineRegistry,
     PendingGamesRegistry,
-    gameStateControllerFactory,
     GameStateModelService,
     GameEffectsService,
     GameInjectableProxyService,

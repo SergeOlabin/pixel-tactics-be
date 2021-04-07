@@ -147,42 +147,28 @@ export class GameGateway extends BaseGatewayAddon {
     this.server
       .to(clientId)
       .emit(GameInitEventsToClient.SendGameState, adaptedState);
-
-    // // add to registry
-    // const contextId = ContextIdFactory.create();
-    // this.moduleRef.registerRequestByContextId(
-    //   {
-    //     contextId,
-    //     gameId: gameState._id,
-    //   },
-    //   contextId,
-    // );
-
-    // console.log('contextId', contextId);
-
-    // const gameStateService = this.moduleRef.resolve(
-    //   GameStateService,
-    //   contextId,
-    //   { strict: false },
-    // );
   }
 
   async getGameStateService(req: { contextId?: ContextId; gameId?: string }) {
     const { contextId, gameId } = req;
 
-    if (!contextId || !gameId) {
+    if (!contextId && !gameId) {
       throw new WsException(
         `please provider at least one of: ['contextId' or 'gameId']`,
       );
     }
 
     if (contextId) {
-      return await this.moduleRef.resolve(GameStateService, contextId);
+      return await this.moduleRef.resolve(GameStateService, contextId, {
+        strict: false,
+      });
     }
 
     const gameCfg = this.gamesOnlineRegistry.getItem(gameId);
 
-    return await this.moduleRef.resolve(GameStateService, gameCfg.contextId);
+    return await this.moduleRef.resolve(GameStateService, gameCfg.contextId, {
+      strict: false,
+    });
   }
 
   private async startGame(userIds: string[], id?: string) {

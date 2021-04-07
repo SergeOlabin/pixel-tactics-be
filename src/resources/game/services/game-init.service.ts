@@ -13,8 +13,6 @@ import { GameStateService } from '../../game-state/game-state.service';
 import { BoardStateAddon } from '../addons/board-state.addon';
 import { PlayersAddon } from '../addons/players-state.addon';
 import { TurnStateAddon } from '../addons/turn-state.addon';
-import { GAME_STATE_CONTROLLER_FACTORY_TOKEN } from '../constants/tokens';
-import { GameStateControllerFactoryType } from '../factories/game-state-controller/game-state-controller.factory';
 import {
   GamesOnlineRegistry,
   IGameOnlineCfg,
@@ -30,8 +28,6 @@ export class GameInitService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @InjectModel(GameState.name)
     private readonly gameStateModel: Model<GameStateDocumentType>,
-    @Inject(GAME_STATE_CONTROLLER_FACTORY_TOKEN)
-    private gameStateControllerFactory: GameStateControllerFactoryType,
     private readonly gamesRegistry: GamesOnlineRegistry,
     private readonly moduleRef: ModuleRef,
   ) {}

@@ -9,6 +9,7 @@ export enum GameEventTypes {
   Move = 'move',
   PlayCard = 'playCard',
   SelectLeader = 'selectLeader',
+  Attack = 'attack',
 }
 
 // PAYLOADS
@@ -31,6 +32,11 @@ export interface IPlayCardPayload extends IBaseGameEventPayload {
 }
 
 export interface IMoveCardPayload extends IBaseGameEventPayload {
+  fromPlace: IPlace;
+  toPlace: IPlace;
+}
+
+export interface IAttackPayload extends IBaseGameEventPayload {
   fromPlace: IPlace;
   toPlace: IPlace;
 }

@@ -1,4 +1,4 @@
-import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Logger, SetMetadata, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import {
   ConnectedSocket,
@@ -107,6 +107,7 @@ export class AppGateway
   }
 
   @SubscribeMessage(GameInitEventsToServer.CheckForExistingGame)
+  @SetMetadata('custom-meta', 'asd')
   async checkForExistingGame(
     @MessageBody() payload: ICheckForExistingGamePayload,
   ) {

@@ -6,7 +6,7 @@ import { GameStateDocumentType } from '../../game/schemas/game-state.schema';
 @Injectable({
   scope: Scope.REQUEST,
 })
-export class NextTurnService {
+export class NextTurnActionService {
   constructor(@Inject(REQUEST) private readonly request: any) {
     console.log('NextTurnService request', request);
   }

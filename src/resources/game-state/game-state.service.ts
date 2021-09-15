@@ -1,5 +1,5 @@
-import { Inject, Injectable, Scope } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
+import { ArgumentsHost, Inject, Injectable, Scope } from '@nestjs/common';
+import { Reflector, REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { WsException } from '@nestjs/websockets';
 import { Model } from 'mongoose';
@@ -23,11 +23,20 @@ import {
   GameState,
   GameStateDocumentType,
 } from '../game/schemas/game-state.schema';
-import { NextTurnService } from './helper-services/next-turn.service';
-import { PlayCardService } from './helper-services/play-card.service';
+import { NextTurnActionService } from './action-services/next-turn-action.service';
+import { PlayCardActionService } from './action-services/play-card-action.service';
 import { v4 as uuid } from 'uuid';
 import { WsExceptionType } from '../../shared/types/socket-exception.types';
-import { MoveCharacterService } from './helper-services/move-character.service';
+import { MoveActionService } from './action-services/move-action.service';
+
+function SubscribeEvent(event: string) {
+  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+    debugger;
+    console.log('target', target);
+    console.log('propertyKey', propertyKey);
+    console.log('descriptor', descriptor);
+  };
+}
 
 @Injectable({
   scope: Scope.TRANSIENT,
@@ -40,9 +49,10 @@ export class GameStateService {
     @Inject(REQUEST) private readonly request: any,
     @InjectModel(GameState.name)
     public gameStateModel: Model<GameStateDocumentType>,
-    private readonly nextTurnService: NextTurnService,
-    private readonly playCardService: PlayCardService,
-    private readonly moveCharacterService: MoveCharacterService,
+    private readonly nextTurnService: NextTurnActionService,
+    private readonly playCardService: PlayCardActionService,
+    private readonly moveCharacterService: MoveActionService,
+    private readonly reflector: Reflector,
   ) {
     this.gameId = request.gameId as string;
   }
@@ -77,7 +87,8 @@ export class GameStateService {
     }
   }
 
-  async drawCard(payload: IDrawCardPayload, cardsAmount = 1) {
+  @SubscribeEvent(GameEventTypes.DrawCard)
+  async drawCard(payload: IDrawCardPayload) {
     const {
       gameState,
       playerColor,
@@ -85,6 +96,7 @@ export class GameStateService {
       playerMeta,
     } = await this.prepare(payload);
 
+    const cardsAmount = payload.cardsAmount || 1;
     if (playerMeta.actionsMeta.available <= 0) {
       throw new WsException({
         type: WsExceptionType.Error,
@@ -180,6 +192,11 @@ export class GameStateService {
   }
 
   async getState() {
+    console.log(
+      'reflector',
+      this.reflector.get('custom-meta', GameStateService),
+    );
+
     const gameState = await this.getModel();
     return gameState?.toObject();
   }

@@ -10,7 +10,7 @@ import { checkWaveValidity } from '../helpers/check-wave-validity';
 @Injectable({
   scope: Scope.REQUEST,
 })
-export class MoveCharacterService {
+export class MoveActionService {
   async move(
     { gameState, playerMeta, playerBoard }: IPrepare,
     payload: IMoveCardPayload,

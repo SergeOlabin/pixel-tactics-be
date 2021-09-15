@@ -12,7 +12,7 @@ import { checkWaveValidity } from '../helpers/check-wave-validity';
 @Injectable({
   scope: Scope.REQUEST,
 })
-export class PlayCardService {
+export class PlayCardActionService {
   constructor(
     @Inject(REQUEST) private readonly request: any,
     private readonly charactersRegistry: CharactersRegistry,

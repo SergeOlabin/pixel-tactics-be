@@ -3,9 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CharactersRegistryModule } from '../../shared/registries/static/characters-registry/characters-registry.module';
 import { GameState, GameStateSchema } from '../game/schemas/game-state.schema';
 import { GameStateService } from './game-state.service';
-import { MoveCharacterService } from './helper-services/move-character.service';
-import { NextTurnService } from './helper-services/next-turn.service';
-import { PlayCardService } from './helper-services/play-card.service';
+import { AttackActionService } from './action-services/attack-action.service';
+import { MoveActionService } from './action-services/move-action.service';
+import { NextTurnActionService } from './action-services/next-turn-action.service';
+import { PlayCardActionService } from './action-services/play-card-action.service';
 
 @Module({
   imports: [
@@ -18,10 +19,11 @@ import { PlayCardService } from './helper-services/play-card.service';
     ]),
   ],
   providers: [
-    NextTurnService,
-    PlayCardService,
+    NextTurnActionService,
+    PlayCardActionService,
     GameStateService,
-    MoveCharacterService,
+    MoveActionService,
+    AttackActionService,
   ],
   exports: [GameStateService],
 })
